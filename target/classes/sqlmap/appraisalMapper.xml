@@ -1,0 +1,807 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+    
+<mapper namespace="com.ksinfo.appraisal.dao.AppraisalMainDao">
+    
+    <select id="adminFieldList" resultType="com.ksinfo.appraisal.dto.AppraisalFieldListDto" parameterType="java.util.Map">
+        SELECT 
+        	field.field_idx
+        	,field.field_code
+        	,field.field_name
+        	,field.reg_date
+        	,field.field_addr
+		FROM 
+			field_mgt as field
+		JOIN
+			(
+				SELECT
+					field_code
+					,min(work_year_month)as work_start
+                	,max(work_year_month) as work_end
+				FROM 
+					conduct_mgt
+				GROUP BY 
+					field_code
+			) AS con
+		ON
+			con.field_code=field.field_code
+		WHERE 
+			logical_del_flg=false
+			<!-- AND work_end<![CDATA[>=]]>to_date(#{appraisal_start_date},'YYYY-MM-DD')  
+            AND work_start<![CDATA[<=]]> to_date(#{appraisal_end_date},'YYYY-MM-DD') -->
+            AND work_start<![CDATA[<=]]> now()
+    </select>
+
+    <select id="employeeFieldList" resultType="com.ksinfo.appraisal.dto.AppraisalFieldListDto" parameterType="java.util.Map">        
+        SELECT 
+        	field.field_idx
+            ,con.field_code
+            ,field.field_name
+            ,con.work_start
+            ,con.work_end
+            ,con.leader_code
+            ,field.reg_date
+            ,field.field_addr 
+        FROM
+            (SELECT         
+                emp_id
+                ,field_code
+                ,min(work_year_month)as work_start
+                ,to_char(max(work_year_month)+interval'1 months'- interval'1 days','YYYY-MM-DD') as work_end
+                ,logical_del_flg
+                ,leader_code
+            FROM        
+                conduct_mgt
+            GROUP BY
+                emp_id,field_code,logical_del_flg,leader_code
+            HAVING 
+            	emp_id=#{emp_id} 
+            ) AS con
+            INNER JOIN
+            field_mgt AS field    
+            ON
+            con.field_code=field.field_code
+        WHERE
+            con.logical_del_flg=false
+<!--             AND to_date(con.work_end,'YYYY-MM-DD') <![CDATA[>=]]> to_date(#{appraisal_start_date},'YYYY-MM-DD')
+            AND con.work_start<![CDATA[<=]]> to_date(#{appraisal_end_date},'YYYY-MM-DD')   -->
+            AND con.work_start<![CDATA[<=]]> now()
+         ORDER BY
+           con.work_start,con.work_end
+    </select>
+    <select id="getFieldAuth" resultType="String" parameterType="java.util.Map">
+        SELECT
+            leader_code
+        FROM
+            conduct_mgt    
+        GROUP BY
+            emp_id,field_code,leader_code
+        HAVING    
+            emp_id=#{emp_id}
+            AND field_code=#{field_code}   
+<!--            AND max(work_year_month)<![CDATA[>=]]>to_date(#{appraisal_start_date},'YYYY-MM-DD')
+            AND min(work_year_month)<![CDATA[<=]]> to_date(#{appraisal_end_date},'YYYY-MM-DD')   -->
+            AND min(work_year_month)<![CDATA[<=]]> now()
+                 
+    </select>
+    
+    <select id="getEmployeeList" resultType="com.ksinfo.appraisal.dto.AppraisalModalDto" parameterType="java.util.Map">
+        SELECT
+            em.emp_id
+            ,em.emp_name
+            ,appr.self_app_flg
+            ,appr.leader_app_flg
+            ,appr.customer_app_flg
+            ,appr.perfomance_app_flg
+            ,appr.accept_flg
+            ,con.leader_code
+        FROM
+                (
+                SELECT         
+                    emp_id
+                    ,field_code
+                    ,min(work_year_month) as work_start
+                    ,max(work_year_month) as work_end
+                    ,leader_code
+                FROM        
+                    conduct_mgt
+                GROUP BY
+                    emp_id,field_code,leader_code
+                    )
+                AS con
+            JOIN
+                emp_mgt AS em
+            ON     
+                em.emp_id=con.emp_id     
+            LEFT OUTER JOIN 
+                (SELECT * FROM appraisal_mgt as m
+                WHERE m.conduct_start_month<![CDATA[<=]]> now()
+                AND logical_del_flg=false) 
+                as appr
+            ON con.emp_id=appr.emp_id
+            AND con.field_code=appr.field_code
+        WHERE 
+            con.field_code=#{field_code}
+            AND work_start<![CDATA[<=]]> now() 
+        ORDER BY
+        	em.emp_id = #{emp_id} desc
+            ,con.leader_code asc
+    </select>
+    <select id="writeApprUniChk" resultType="Integer" parameterType="com.ksinfo.appraisal.dto.AppraisalMgtDto">
+    	SELECT
+    		COUNT(*)
+    	FROM
+    		appraisal_mgt
+    	WHERE
+    		emp_id=#{emp_id}
+    		AND field_code=#{field_code}
+    		AND conduct_start_month=to_date(#{conduct_start_month},'YYYY-MM-DD')
+    		AND conduct_end_month=to_date(#{conduct_end_month},'YYYY-MM-DD')
+    </select>  
+    <select id="getSelfAndLeaderApp" resultType="com.ksinfo.appraisal.dto.AppraisalMgtDto" parameterType="java.util.Map">
+        SELECT
+            field.field_name
+            ,field.field_code
+            ,field.field_addr 
+            ,field.field_env 
+            ,field.field_tool
+            ,con.* 
+            ,(select position_name from position_mst where position_code=con.field_position_code)as field_position_name
+            ,emp.emp_id
+            ,emp.emp_name
+            ,appr.appriaiser_id
+            ,(select emp_name from emp_mgt where emp_id=appr.appriaiser_id) as appriaiser_name
+            ,appr.field_role
+            ,appr.self_diligence
+            ,appr.self_passion
+            ,appr.self_understand
+            ,appr.self_learning
+            ,appr.self_responsibility
+            ,appr.self_application
+            ,appr.self_communication
+            ,appr.self_contribution
+            ,appr.self_sum
+            ,appr.self_advantage
+            ,appr.self_weak
+            ,appr.self_eval
+            ,appr.ld_diligence
+            ,appr.ld_passion
+            ,appr.ld_understand
+            ,appr.ld_learning
+            ,appr.ld_responsibility
+            ,appr.ld_application
+            ,appr.ld_communication
+            ,appr.ld_contribution
+            ,appr.ld_sum
+            ,appr.ld_advantage
+            ,appr.ld_weak
+            ,appr.ld_eval
+            ,appr.appraisal_idx
+            ,appr.accept_flg
+            ,con.work_start as conduct_start_month
+            ,to_char(work_end,'YYYY-MM-DD') as conduct_end_month
+        FROM
+            ((
+                SELECT         
+                    emp_id
+                    ,field_code
+                    ,min(work_year_month) as work_start
+                    ,max(work_year_month)+interval'1 months'- interval'1 days' as work_end
+                    ,leader_code
+                    ,min(position_code) as field_position_code
+                    
+                FROM        
+                    conduct_mgt
+                GROUP BY
+                    emp_id,field_code,leader_code
+                HAVING
+                    emp_id=#{emp_id}
+                AND    
+                    field_code=#{field_code}
+                                )
+                AS con
+            JOIN
+                emp_mgt as emp
+            ON
+                con.emp_id=emp.emp_id)
+            JOIN
+                field_mgt as field
+            ON
+                con.field_code=field.field_code    
+            LEFT OUTER JOIN
+                (SELECT * FROM appraisal_mgt  as m
+                WHERE    m.conduct_start_month<![CDATA[<=]]>now()
+               	AND logical_del_flg=false
+                ) 
+                as appr
+            ON
+                con.emp_id=appr.emp_id
+            AND
+                con.field_code=appr.field_code
+            WHERE work_start<![CDATA[<=]]> now()
+        
+    </select>
+    <insert id="writeSelfAppr" parameterType="com.ksinfo.appraisal.dto.AppraisalMgtDto">
+        INSERT INTO appraisal_mgt(
+            appraisal_idx
+            ,emp_id
+            ,conduct_start_month
+            ,conduct_end_month
+            ,field_code
+            ,field_role
+            ,field_position_code
+            ,field_env
+            ,field_tool
+            ,self_diligence
+            ,self_passion
+            ,self_responsibility
+            ,self_understand
+            ,self_learning
+            ,self_application
+            ,self_communication
+            ,self_contribution
+            ,self_sum
+            ,self_advantage
+            ,self_weak
+            ,self_eval
+            ,self_app_flg
+            ,leader_app_flg
+            ,customer_app_flg
+            ,perfomance_app_flg
+            ,rec_create_id
+            ,rec_update_id
+            ,logical_del_flg
+            ,accept_flg
+        )
+        VALUES(
+        nextval('appraisal_index_appraisal_idx_seq')
+        ,#{emp_id}
+        ,to_date(#{conduct_start_month},'YYYY/MM/DD')
+        ,to_date(#{conduct_end_month},'YYYY/MM/DD')
+        ,#{field_code}
+        ,#{field_role}
+        ,#{field_position_code}
+        ,#{field_env}
+        ,#{field_tool}
+        ,#{self_diligence}
+        ,#{self_passion}
+        ,#{self_responsibility}
+        ,#{self_understand}
+        ,#{self_learning}
+        ,#{self_application}
+        ,#{self_communication}
+        ,#{self_contribution}
+        ,#{self_sum}
+        ,#{self_advantage}
+        ,#{self_weak}
+        ,#{self_eval}
+        ,true
+        ,false
+        ,false
+        ,false
+        ,#{emp_id}
+        ,#{emp_id}
+        ,false
+        ,false                    
+        )    
+    </insert>
+    <update id="updateSelfAppr" parameterType="com.ksinfo.appraisal.dto.AppraisalMgtDto">
+        UPDATE appraisal_mgt
+            SET 
+                self_diligence=#{self_diligence}
+                ,self_passion=#{self_passion}
+                ,self_responsibility=#{self_responsibility}
+                ,self_understand=#{self_understand}
+                ,self_learning=#{self_learning}
+                ,self_application=#{self_application}
+                ,self_communication=#{self_communication}
+                ,self_contribution=#{self_contribution}
+                ,self_sum=#{self_sum}
+                ,self_advantage=#{self_advantage}
+                ,self_weak=#{self_weak}
+                ,self_eval=#{self_eval}
+                ,field_role=#{field_role}
+                ,self_app_flg=true
+                ,rec_update_id=#{rec_update_id}
+                ,rec_update_date=now()
+            WHERE
+                appraisal_idx=#{appraisal_idx}
+            
+    </update>
+        <insert id="writeLeaderAppr" parameterType="com.ksinfo.appraisal.dto.AppraisalMgtDto">
+        INSERT INTO appraisal_mgt(
+            appraisal_idx
+            ,appriaiser_id
+            ,emp_id
+            ,conduct_start_month
+            ,conduct_end_month
+            ,field_code
+            ,field_role
+            ,field_position_code
+            ,field_env
+            ,field_tool
+            ,ld_diligence
+            ,ld_passion
+            ,ld_responsibility
+            ,ld_understand
+            ,ld_learning
+            ,ld_application
+            ,ld_communication
+            ,ld_contribution
+            ,ld_sum
+            ,ld_advantage
+            ,ld_weak
+            ,ld_eval
+            ,self_app_flg
+            ,leader_app_flg
+            ,customer_app_flg
+            ,perfomance_app_flg
+            ,rec_create_id
+            ,rec_update_id
+            ,logical_del_flg
+            ,accept_flg
+        )
+        VALUES(
+        nextval('appraisal_index_appraisal_idx_seq')
+        ,#{appriaiser_id}
+        ,#{emp_id}
+        ,to_date(#{conduct_start_month},'YYYY/MM/DD')
+        ,to_date(#{conduct_end_month},'YYYY/MM/DD')
+        ,#{field_code}
+        ,#{field_role}
+        ,#{field_position_code}
+        ,#{field_env}
+        ,#{field_tool}
+        ,#{ld_diligence}
+        ,#{ld_passion}
+        ,#{ld_responsibility}
+        ,#{ld_understand}
+        ,#{ld_learning}
+        ,#{ld_application}
+        ,#{ld_communication}
+        ,#{ld_contribution}
+        ,#{ld_sum}
+        ,#{ld_advantage}
+        ,#{ld_weak}
+        ,#{ld_eval}
+        ,false
+        ,true
+        ,false
+        ,false
+        ,#{rec_create_id}
+        ,#{rec_update_id}
+        ,false    
+        ,false                
+        )    
+    </insert>
+    <update id="updateLeaderAppr" parameterType="com.ksinfo.appraisal.dto.AppraisalMgtDto">
+        UPDATE appraisal_mgt
+            SET 
+                ld_diligence=#{ld_diligence}
+                ,ld_passion=#{ld_passion}
+                ,ld_responsibility=#{ld_responsibility}
+                ,ld_understand=#{ld_understand}
+                ,ld_learning=#{ld_learning}
+                ,ld_application=#{ld_application}
+                ,ld_communication=#{ld_communication}
+                ,ld_contribution=#{ld_contribution}
+                ,ld_sum=#{ld_sum}
+                ,ld_advantage=#{ld_advantage}
+                ,ld_weak=#{ld_weak}
+                ,ld_eval=#{ld_eval}
+                ,field_role=#{field_role}
+                ,leader_app_flg=true
+                ,rec_update_id=#{rec_update_id}
+                ,appriaiser_id=#{appriaiser_id}
+                ,rec_update_date=now()
+            WHERE
+                appraisal_idx=#{appraisal_idx}
+            
+    </update>
+    
+    
+        <select id="getPerformAppr" resultType="com.ksinfo.appraisal.dto.AppraisalMgtDto" parameterType="java.util.Map">
+        SELECT
+            field.field_name
+            ,field.field_code
+            ,field.field_addr 
+            ,field.field_env
+            ,field.field_tool
+            ,con.field_position_code
+            ,(select position_name from position_mst where position_code=con.field_position_code)as field_position_name
+            ,emp.emp_id
+            ,emp.emp_name as emp_name
+            ,appr.appriaiser_id
+            ,(select emp_name from emp_mgt where emp_id=appr.appriaiser_id) as appriaiser_name
+            ,appr.field_role
+            ,appr.cust_ability
+            ,appr.cust_ability_cmt
+            ,appr.cust_keepwork
+            ,appr.cust_keepwork_cmt
+            ,appr.cust_sum
+            ,appr.ld_sales
+            ,appr.ld_sales_cmt
+            ,appr.ld_promote
+            ,appr.ld_promote_cmt
+            ,appr.sales_sum
+            ,appr.appraisal_idx
+            ,appr.accept_flg
+            ,con.work_start as conduct_start_month
+            ,to_char(work_end,'YYYY-MM-DD') as conduct_end_month
+        FROM
+            ((
+                SELECT         
+                    emp_id
+                    ,field_code
+                    ,min(work_year_month) as work_start
+                    ,max(work_year_month)+interval'1 months'- interval'1 days' as work_end
+                    ,leader_code
+                    ,min(position_code) as field_position_code
+                    
+                FROM        
+                    conduct_mgt
+                GROUP BY
+                    emp_id,field_code,leader_code
+                HAVING
+                    emp_id=#{emp_id}
+                AND    
+                    field_code=#{field_code}
+                                )
+                AS con
+            JOIN
+                emp_mgt as emp
+            ON
+                con.emp_id=emp.emp_id)
+            JOIN
+                field_mgt as field
+            ON
+                con.field_code=field.field_code    
+            LEFT OUTER JOIN
+                (SELECT * FROM appraisal_mgt as m
+                WHERE  m.conduct_start_month<![CDATA[<=]]> now()
+               
+                ) 
+                as appr
+            ON
+                con.emp_id=appr.emp_id
+            AND
+                con.field_code=appr.field_code
+            WHERE work_start<![CDATA[<=]]> now()
+        
+    </select>
+    <insert id="writePerformAppr" parameterType="com.ksinfo.appraisal.dto.AppraisalConfirmDto">
+        INSERT INTO appraisal_mgt(
+            appraisal_idx
+            ,emp_id
+            ,conduct_start_month
+            ,conduct_end_month
+            ,field_code
+            ,field_role
+            ,field_position_code
+            ,field_env
+            ,field_tool
+            ,cust_ability
+            ,cust_ability_cmt
+            ,cust_keepwork
+            ,cust_keepwork_cmt
+            ,cust_sum
+            ,ld_sales
+            ,ld_sales_cmt
+            ,ld_promote
+            ,ld_promote_cmt
+            ,sales_sum
+            ,self_app_flg
+            ,leader_app_flg
+            ,customer_app_flg
+            ,perfomance_app_flg
+            ,rec_create_id
+            ,rec_update_id
+            ,logical_del_flg
+            ,accept_flg
+        )
+        VALUES(
+        nextval('appraisal_index_appraisal_idx_seq')
+        ,#{emp_id}
+        ,to_date(#{conduct_start_month},'YYYY/MM/DD')
+        ,to_date(#{conduct_end_month},'YYYY/MM/DD')
+        ,#{field_code}
+        ,#{field_role}
+        ,#{field_position_code}
+        ,#{field_env}
+        ,#{field_tool}
+        ,#{cust_ability}
+        ,#{cust_ability_cmt}
+        ,#{cust_keepwork}
+        ,#{cust_keepwork_cmt}
+        ,#{cust_sum}
+        ,#{ld_sales}
+        ,#{ld_sales_cmt}
+        ,#{ld_promote}
+        ,#{ld_promote_cmt}
+        ,#{sales_sum}
+        ,false
+        ,false
+        ,#{customer_app_flg}
+        ,#{perfomance_app_flg}
+        ,#{rec_create_id}
+        ,#{rec_update_id}
+        ,false    
+        ,false                
+        )    
+    </insert>
+    <update id="updatePerformAppr" parameterType="com.ksinfo.appraisal.dto.AppraisalMgtDto">
+        UPDATE appraisal_mgt
+            SET 
+                cust_ability=#{cust_ability}
+                ,cust_ability_cmt=#{cust_ability_cmt}
+                ,cust_keepwork=#{cust_keepwork}
+                ,cust_keepwork_cmt=#{cust_keepwork_cmt}
+                ,cust_sum=#{cust_sum}
+                ,ld_sales=#{ld_sales}
+                ,ld_sales_cmt=#{ld_sales_cmt}
+                ,ld_promote=#{ld_promote}
+                ,ld_promote_cmt=#{ld_promote_cmt}
+                ,sales_sum=#{sales_sum}
+                ,field_role=#{field_role}
+                ,customer_app_flg=#{customer_app_flg}
+                ,perfomance_app_flg=#{perfomance_app_flg}                
+                ,rec_update_id=#{rec_update_id}
+                ,rec_update_date=now()
+            WHERE 
+                appraisal_idx=#{appraisal_idx}
+    </update>
+    <select id="getAllScoreCnt" resultType="Integer">
+    	SELECT
+            count(*)
+        FROM
+            appraisal_mgt
+    </select>
+    
+    <select id="getAllScore" resultType="com.ksinfo.appraisal.dto.AppraisalMgtDto" parameterType="java.util.Map">
+       SELECT
+		 *
+		 FROM(
+        SELECT
+        	ROW_NUMBER() OVER (order by appr.emp_id ASC) AS no
+            ,appr.emp_id
+            ,emp.emp_name
+            ,appr.field_code
+            ,(select field_name from field_mgt where field_code=appr.field_code)as field_name
+            ,appr.field_position_code
+            ,posi.position_name as field_position_name
+            ,appr.conduct_start_month
+            ,conduct_end_month
+            ,appr.ld_sum
+            ,appr.cust_ability
+            ,appr.cust_keepwork
+            ,appr.cust_sum
+            ,appr.ld_sales
+            ,appr.ld_promote
+            ,appr.sales_sum
+            ,accept_flg
+        FROM
+            appraisal_mgt as appr
+            JOIN
+            emp_mgt as emp
+            ON
+            appr.emp_id=emp.emp_id
+            JOIN
+            position_mst as posi
+            ON
+            appr.field_position_code=posi.position_code
+            JOIN
+            field_mgt as field
+            ON
+            appr.field_code=field.field_code
+        ORDER BY
+            accept_flg
+            ,appr.field_code asc
+            ,appr.emp_id asc )AS a
+		WHERE
+			no between #{start} and #{end}
+            
+    </select>
+    <select id="getMycoreCnt" resultType="Integer" parameterType="java.util.Map">
+    	SELECT
+            count(*)
+        FROM
+            appraisal_mgt as appr
+        WHERE
+            emp_id=#{emp_id} 
+       		AND logical_del_flg=FALSE       
+    </select>
+    <select id="getMyScore" resultType="com.ksinfo.appraisal.dto.AppraisalMgtDto" parameterType="java.util.Map">
+       SELECT
+		 *
+		 FROM(
+        SELECT
+            appr.emp_id
+            ,ROW_NUMBER() OVER (order by appr.emp_id ASC) AS no
+            ,emp.emp_name
+            ,appr.field_code
+            ,(select field_name from field_mgt where field_code=appr.field_code)as field_name
+            ,appr.field_position_code
+            ,posi.position_name as field_position_name
+            ,appr.conduct_start_month
+            ,conduct_end_month
+            ,appr.ld_sum
+            ,appr.cust_ability
+            ,appr.cust_keepwork
+            ,appr.cust_sum
+            ,appr.ld_sales
+            ,appr.ld_promote
+            ,appr.sales_sum
+            ,appr.accept_flg
+        FROM
+            appraisal_mgt as appr
+        JOIN
+        	emp_mgt as emp
+        	ON
+        	emp.emp_id=appr.emp_id    
+        JOIN
+        	position_mst as posi
+        	ON
+        	posi.position_code=appr.field_position_code
+        WHERE
+            appr.emp_id=#{emp_id} 
+       		AND appr.logical_del_flg=FALSE       
+        ORDER BY
+         accept_flg
+         )as a
+    WHERE
+		no between #{start} and #{end}     
+               
+    </select>
+    <select id="getMyListCnt" resultType="Integer" parameterType="java.util.Map">
+    	SELECT
+	            count(*)
+	        FROM
+	            appraisal_result_mgt
+	        WHERE
+	            emp_id=#{emp_id}
+    </select>
+    <select id="getMyList" resultType="com.ksinfo.appraisal.dto.AppraisalHistoryDto" parameterType="java.util.Map">
+         SELECT
+		 *
+		FROM(
+	        SELECT
+	            ROW_NUMBER() OVER (order by emp_id ASC) AS no
+	            ,position_name
+	            ,project_name
+	            ,to_char(appriasal_start_date,'YYYY-MM-DD') as appraisal_start_date
+	            ,to_char(appriasal_end_date,'YYYY-MM-DD') as appraisal_end_date
+	            ,app_grade
+	            ,app_score
+	        FROM
+	            appraisal_result_mgt
+	            JOIN
+	            position_mst
+	            ON
+	            appraisal_result_mgt.position_code=position_mst.position_code
+	        WHERE
+	            emp_id=#{emp_id}
+	            )as a
+	       WHERE
+			no between #{start} and #{end}       
+    </select>
+    <select id="getEmployee" resultType="com.ksinfo.appraisal.dto.AppraisalEmpDto" parameterType="String">
+        SELECT
+            emp.emp_id
+            ,emp.emp_name
+            ,extract(year from age(hired_date)) as work_year
+            ,appr_re.sum_app
+        FROM
+            (select emp_id,sum(app_score) as sum_app from appraisal_result_mgt group by emp_id) as appr_re
+            JOIN
+            emp_mgt as emp
+            ON
+            emp.emp_id=appr_re.emp_id
+        WHERE
+            emp.emp_id=#{emp_id}
+    </select>
+    <select id="getEmployeesCnt" resultType="Integer">
+    	SELECT
+	           count(*)
+	        FROM
+	            (select emp_id from appraisal_result_mgt group by emp_id)as a
+    </select>
+    <select id="getEmployees" resultType="com.ksinfo.appraisal.dto.AppraisalEmpDto" parameterType="java.util.Map">
+       SELECT
+		 *
+		FROM(
+	        SELECT
+	            ROW_NUMBER() OVER (order by emp.emp_id ASC) AS no
+	            ,emp.emp_id
+	            ,emp.emp_name
+	            ,extract(year from age(hired_date)) as work_year
+	            ,appr_re.sum_app
+	        FROM
+	            (select emp_id,sum(app_score) as sum_app from appraisal_result_mgt group by emp_id) as appr_re
+	            JOIN
+	            emp_mgt as emp
+	            ON
+	            emp.emp_id=appr_re.emp_id
+	            )as a
+	    WHERE
+        	no between #{start} and #{end}
+    </select>
+    <select id="getApprList" resultType="com.ksinfo.appraisal.dto.AppraisalConfirmDto">
+    	SELECT
+    		emp.emp_id
+    		,emp.emp_name
+    		,(select field_name from field_mgt where field_code=appr.field_code) as project_name
+    		,(select position_name from position_mst where position_code=appr.position_code) as position_name
+    		,appr.*
+    	FROM
+    		(SELECT
+    			appraisal_idx
+    			,emp_id 
+    			,field_code
+    			,field_position_code as position_code
+    			,ld_sum
+    			,cust_sum
+    			,sales_sum
+    			,conduct_start_month as appraisal_start_date
+    			,conduct_end_month as appraisal_end_date 
+    		FROM 
+    			appraisal_mgt
+    		WHERE 
+    			self_app_flg=TRUE
+    			AND leader_app_flg=TRUE
+				AND customer_app_flg=TRUE
+				AND perfomance_app_flg=TRUE
+				AND accept_flg=FALSE
+				AND logical_del_flg=FALSE)
+			AS appr
+		JOIN
+			emp_mgt as emp
+		ON
+			appr.emp_id=emp.emp_id						
+    </select>
+    <insert id="putAppraisal" parameterType="com.ksinfo.appraisal.dto.AppraisalConfirmDto">
+    	INSERT INTO
+    		appraisal_result_mgt(
+    			appraisal_rst_idx
+				,appraisal_idx
+				,emp_id
+				,position_code
+				,project_name
+				,app_grade
+				,appriasal_start_date
+				,appriasal_end_date
+				,project_score
+				,app_score
+				,rec_create_id
+				,rec_create_date
+				,rec_update_id
+				,rec_update_date
+				,logical_del_flg
+    		)
+    	VALUES
+    		(nextval('appraisal_result_mgt_appraisal_rst_idx_seq')
+			,#{appraisal_idx}
+			,#{emp_id}
+			,#{position_code}
+			,#{project_name}
+			,#{app_grade}
+			,to_date(#{appraisal_start_date},'YYYY-MM-DD')
+			,to_date(#{appraisal_end_date},'YYYY-MM-DD')
+			,#{project_score}
+			,#{app_score}
+			,#{rec_create_id}
+			,now()
+			,#{rec_update_id}
+			,now()
+			,FALSE
+		)
+    </insert>
+    <update id="acceptFlg_on">
+    	UPDATE
+    		appraisal_mgt
+    	SET
+    		accept_flg=TRUE
+    	WHERE
+    		appraisal_idx=#{appraisal_idx}	
+    </update>
+</mapper>

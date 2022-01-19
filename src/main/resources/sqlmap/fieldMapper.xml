@@ -1,0 +1,411 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+    
+<mapper namespace="com.ksinfo.field.dao.FieldDao">
+     <select id="fieldSelect" parameterType="String" resultType="com.ksinfo.field.dto.FieldRegistDto">
+         SELECT
+             field_idx
+             ,field_code
+             ,field_name
+             ,field_addr
+             ,reg_date
+             ,leader_emp_id
+             ,field_difficulty
+             ,field_memo
+             ,work_start_time
+             ,work_end_time
+             ,TRIM(work_break_time1) AS work_break_time1 
+             ,TRIM(work_break_time2) AS work_break_time2 
+             ,field_tool
+             ,field_env
+             ,field_area_code
+             ,rec_create_id
+             ,rec_create_date
+             ,rec_update_id
+             ,rec_update_date
+             ,logical_del_flg
+         FROM
+           field_mgt
+         WHERE field_code=#{field_code}
+     </select>
+ 
+     <select id="fieldAreaList" resultType="com.ksinfo.field.dto.FieldAreaDto">
+         SELECT
+             field_area_idx,
+             field_area_code,
+             field_area_name
+         FROM field_area_mst
+         ORDER BY field_area_idx
+     </select>
+ 
+    <insert id="fieldInsert" parameterType="com.ksinfo.field.dto.FieldRegistDto">
+         INSERT INTO field_mgt(
+            field_idx,
+            field_code,
+            field_name,
+            field_addr,
+            reg_date,
+            field_difficulty,
+            field_memo,
+            work_start_time,
+            work_end_time,
+            work_break_time1,
+            work_break_time2,
+            field_tool,
+            field_env,
+            field_area_code,
+            rec_create_id,
+            rec_update_id,
+            logical_del_flg    
+        ) VALUES (
+            NEXTVAL('field_mgt_field_idx_seq'),
+            #{field_code},
+            #{field_name},
+            #{field_addr},
+            #{reg_date},
+            #{field_difficulty},
+            #{field_memo},
+            #{work_start_time},
+            #{work_end_time},
+            #{work_break_time1},
+            #{work_break_time2},
+            #{field_tool},
+            #{field_env},
+            #{field_area_code},
+            'admin',
+            'admin',
+            'N'
+        )
+    </insert>
+    <select id="fieldCodeMaxNumber" resultType="Integer">
+    <!--  -->
+        SELECT
+            CASE
+                WHEN MAX(CAST(field_code AS INT)+1)=10000
+                    THEN MIN(cast(field_code as INT)+1)
+                    ELSE MAX(CAST(field_code AS INT)+1)
+            END
+        FROM field_mgt
+        WHERE (cast(field_code as INT)+1) not in (SELECT cast(field_code AS INT) FROM field_mgt)
+    <!--  
+        SELECT coalesce(max(field_code), '0')
+        FROM field_mgt
+        WHERE not field_code='9999'
+    -->
+    </select>
+    
+    <select id="fieldCodeCheck" parameterType="String" resultType="Integer">
+        SELECT count(field_code) 
+            FROM field_mgt 
+                WHERE field_code=#{field_code}
+    </select>
+    
+    <select id="fieldDetail" parameterType="String" resultType="com.ksinfo.field.dto.FieldInfoDetailDto">
+     <!--    SELECT
+            CASE WHEN emp.emp_id = any(field.leader_emp_id) THEN 'Y' ELSE 'N' END as leader_check,*    
+        FROM
+            (SELECT * FROM field_mgt WHERE field_code=#{field_code}) as field
+        LEFT JOIN
+            (SELECT UNNEST(field_code) as code,emp_id,emp_name
+            FROM emp_mgt WHERE #{field_code}=any(field_code)) as emp
+        ON emp.code=field.field_code
+        ORDER BY leader_check DESC -->
+		SELECT
+		CASE 
+			WHEN emp.emp_id = any(field.leader_emp_id) 
+			THEN 'Y' ELSE 'N' 
+			END as leader_check,*
+		FROM
+    		(SELECT * FROM field_mgt WHERE field_code=#{field_code}) as field
+		LEFT JOIN
+			(SELECT 
+				UNNEST(field_code) as code
+				,emp_id
+				,emp_name
+				,emp_gender
+				,position_code
+	    FROM emp_mgt WHERE #{field_code}=any(field_code)) as emp
+		ON emp.code=field.field_code
+		LEFT JOIN
+			(SELECT position_name,position_code FROM position_mst) as position
+		ON position.position_code=emp.position_code
+		ORDER BY leader_check DESC
+    </select>
+    
+    <!--　現場情報詳細　 -->
+    <select id="fieldEmpLeftList" parameterType="String" resultType="com.ksinfo.field.dto.FieldEmpLeftListDto">
+        SELECT 
+            position.position_name,
+            emp.emp_name,
+            emp.emp_id,
+            field.field_code,    
+            CASE WHEN emp.emp_id = any(field.leader_emp_id) 
+                THEN 'Y' 
+                ELSE 'N' 
+            END as leader_check
+        FROM position_mst as position,
+        LATERAL (
+            SELECT UNNEST(field_code) as code,*
+            FROM emp_mgt
+            WHERE emp_mgt.position_code = position.position_code
+            ) as emp
+        INNER JOIN field_mgt as field
+        ON emp.code = field.field_code
+        WHERE field.field_code=#{field_code}
+        ORDER BY leader_check DESC
+    </select>
+    
+    <select id="fieldEmpRightList" parameterType="com.ksinfo.field.dto.FieldSearchDto" resultType="com.ksinfo.field.dto.FieldEmpRightListDto">
+        SELECT
+          member.position_name,
+          member.emp_name,
+          member.emp_id,
+          ARRAY_TO_STRING(ARRAY_AGG(field.field_code), ',') AS field_code,
+          ARRAY_TO_STRING(ARRAY_AGG(field.field_name), ',') AS field_name
+        FROM
+            (SELECT 
+              *
+            FROM position_mst as position INNER JOIN
+            (SELECT UNNEST(field_code) as code,* from emp_mgt
+            <if test = "field_code != null ">
+            WHERE NOT #{field_code}=any(field_code)
+            </if>
+            ) as emp
+            ON emp.position_code= position.position_code) as member    
+        LEFT JOIN
+            field_mgt as field
+        ON member.code=field.field_code
+        WHERE
+        <if test = 'word != null and word != ""'>
+        member.emp_name like '%' || #{word} || '%'
+          OR member.emp_id like '%' || #{word} || '%'
+          OR member.position_name  like '%' || #{word} || '%'
+        AND  
+        </if>
+        member.resign_flg=false
+        GROUP BY 
+          member.position_name,
+          member.emp_name,
+          member.emp_id
+    </select>
+    
+    <!-- field_codeが 本社の場合 field_codeを削除する -->
+    <update id="headFieldDel" parameterType="String">
+        UPDATE emp_mgt
+        SET field_code=array_remove(field_code,'0000')
+        WHERE emp_id=#{emp_id} AND field_code='{0000}'
+    </update>
+    
+    <!-- 現場コード追加 -->
+    <update id="fieldEmpIn" parameterType="com.ksinfo.field.dto.FieldEmpUpdateDto">
+        UPDATE emp_mgt
+        SET field_code=array_append(field_code, #{field_code})
+        , rec_update_id = #{rec_update_id}
+        , rec_update_date = now()
+        WHERE emp_id=#{emp_id}
+    </update>
+    
+    <!-- 本社の場合、現場コード削除 -->
+    <update id="fieldEmpOut" parameterType="com.ksinfo.field.dto.FieldEmpUpdateDto">
+        UPDATE emp_mgt
+            SET field_code=
+            CASE array_length(field_code,1)
+        WHEN 1 THEN '{0000}'                <!-- 本社コード入力 -->
+            ELSE array_remove(field_code,#{field_code})
+            END
+        , rec_update_id = #{rec_update_id}
+        , rec_update_date = now()    
+        WHERE emp_id=#{emp_id}
+    </update>
+    
+    <update id="fieldLeaderUnset" parameterType="com.ksinfo.field.dto.FieldEmpUpdateDto">
+        UPDATE field_mgt
+        SET leader_emp_id=array_remove(leader_emp_id,#{emp_id})
+        , rec_update_id = #{rec_update_id}
+        , rec_update_date = now()
+        WHERE field_code=#{field_code}
+    </update>
+    
+    <update id="fieldLeaderNullSet" parameterType="String">
+        UPDATE field_mgt
+        SET leader_emp_id = null
+        WHERE field_code=#{field_code} AND array_length(leader_emp_id, 1) IS NULL
+    </update>
+    
+    <update id="fieldLeaderSet" parameterType="com.ksinfo.field.dto.FieldEmpUpdateDto">
+        UPDATE field_mgt 
+        SET leader_emp_id = array_append(leader_emp_id,#{emp_id})
+        , rec_update_id = #{rec_update_id}
+        , rec_update_date = now()
+        WHERE field_code=#{field_code}
+    </update>
+    
+    <update id="fieldAuthSet" parameterType="com.ksinfo.field.dto.FieldEmpUpdateDto">
+        UPDATE emp_mgt 
+        SET auth_code = '02'
+        , rec_update_id = #{rec_update_id}
+        , rec_update_date = now()
+        WHERE emp_id=#{emp_id}
+    </update>
+     
+    <update id="fieldAuthUnSet" parameterType="com.ksinfo.field.dto.FieldEmpUpdateDto">
+        UPDATE emp_mgt 
+        SET auth_code = '03'
+        , rec_update_id = #{rec_update_id}
+        , rec_update_date = now()
+        WHERE emp_id=#{emp_id}
+    </update>
+
+    <!--　現場情報変更 -->
+    <update id="fieldModify" parameterType="com.ksinfo.field.dto.FieldRegistDto">
+        UPDATE field_mgt
+        SET
+            field_name =         #{field_name},
+            field_addr =         #{field_addr},
+            reg_date =             #{reg_date},
+            field_difficulty =     #{field_difficulty},
+            field_memo =         #{field_memo},
+            work_start_time =     #{work_start_time},
+            work_end_time =     #{work_end_time},
+            work_break_time1 =   #{work_break_time1},
+            work_break_time2 =   #{work_break_time2},
+            field_tool =         #{field_tool},
+            field_env =         #{field_env},
+            field_area_code =   #{field_area_code},
+            rec_update_date =     now()
+        WHERE field_code=#{field_code}
+    </update>
+    
+    <select id="fieldAllList" parameterType="String" resultType="com.ksinfo.field.dto.FieldListDto">
+        SELECT 
+          field_code,
+          field_name 
+        FROM
+          field_mgt 
+        WHERE
+        <if test = "value != null">
+        field_code IN 
+          (SELECT 
+              UNNEST(field_code) code
+            FROM 
+              emp_mgt
+            WHERE 
+              emp_name LIKE '%' || #{field_search} || '%'
+              OR emp_id LIKE '%' || #{field_search} || '%'
+          ) OR 
+        field_name LIKE '%' || #{field_search} || '%' AND
+        </if>
+        NOT field_code='0000'
+        ORDER BY field_code        
+    </select>
+
+    <select id="fieldEmpAllList" resultType="com.ksinfo.field.dto.FieldEmpAllListDto">
+        SELECT
+            field.field_name,
+            field.field_code,
+            emp.emp_name,emp.emp_id,
+            CASE WHEN emp.emp_id = any(field.leader_emp_id) THEN 'Y' ELSE 'N' END as leader_check
+        FROM (SELECT UNNEST(field_code) code, * FROM emp_mgt) as emp
+            LEFT JOIN field_mgt as field
+            ON emp.code = field.field_code
+        WHERE NOT field.field_code='0000'
+        ORDER BY field.field_code,emp.emp_id
+    </select>
+    
+    <select id="fieldMapAll" parameterType="com.ksinfo.field.dto.FieldMapSearchDto" resultType="com.ksinfo.field.dto.FieldMainViewDto">
+        SELECT
+          field.field_code
+          ,field.field_name
+          ,field.field_area_code AS addr_code
+        FROM emp_mgt as emp
+        RIGHT JOIN
+            (SELECT *,
+            UNNEST(
+                CASE WHEN array_length(leader_emp_id,1)>=1 
+                THEN leader_emp_id 
+                ELSE '{null}'::text[] 
+                END
+                ) as leader 
+            FROM field_mgt
+            ) as field
+        ON emp.emp_id=field.leader
+        WHERE
+            <choose>
+                <!-- 현장이름으로 검색 -->
+                <when test = 'search_select != null and search_select.equals("field_name") and word != null'>
+                    field.field_name like '%' || #{word} || '%' AND 
+                </when>
+                <!-- 리더이름으로 검색 -->
+                <when test = 'search_select != null and search_select.equals("emp_id") and word != null'>
+                    emp.emp_name LIKE '%' || #{word} || '%' AND 
+                </when>
+            </choose>
+		NOT field.field_code='0000'
+		<if test="field_code != null">
+		AND field.field_code IN
+		<foreach item="item" index="index" collection="field_code" open="(" separator="," close=")">
+			#{item}
+		</foreach>
+        </if>
+        GROUP BY field.field_code,field.field_name,field.field_area_code
+        ORDER BY field.field_code
+    </select>
+    
+    <select id="fieldMapEmp" parameterType="com.ksinfo.field.dto.FieldMapSearchDto" resultType="com.ksinfo.field.dto.FieldMainViewDto">
+        SELECT 
+          field.field_name
+          , field.field_code
+          , field.field_area_code AS addr_code
+        FROM field_mgt AS field,
+        LATERAL (SELECT
+                UNNEST(field_code) AS code,* 
+                FROM emp_mgt) AS emp
+        WHERE field.field_code = emp.code
+        AND
+        <if test = 'search_select != null and search_select.equals("field_name") and word != null'>
+            field.field_name LIKE '%' || #{word} || '%' AND field.field_code!='0000' AND
+        </if>
+        NOT field.field_code='0000'
+        <if test="field_code != null">
+		AND field.field_code IN
+		<foreach item="item" index="index" collection="field_code" open="(" separator="," close=")">
+			#{item}
+		</foreach>
+        </if>
+        GROUP BY field.field_code,field.field_name,field.field_area_code
+        ORDER BY field.field_code
+    </select>
+    
+    <select id="fieldSimpleInfo" parameterType="String" resultType="com.ksinfo.field.dto.FieldSimpleInfoDto">
+        SELECT 
+            CASE 
+                WHEN emp.emp_id = any(field.leader_emp_id) 
+                THEN emp.emp_name ELSE null 
+            END as leader_name,
+            emp.emp_name,
+            field.field_name,
+            field.field_difficulty,
+            field.work_start_time,
+            field.work_end_time,
+            field.field_addr
+        FROM field_mgt as field
+        LEFT JOIN LATERAL (
+            SELECT
+                UNNEST(field_code) as code,* 
+            FROM emp_mgt) as emp
+        ON field.field_code = emp.code
+        WHERE field.field_code = #{field_code}
+        ORDER BY leader_name DESC
+    </select>
+    
+	<select id="empAuthCode" parameterType="String" resultType="String">
+       SELECT
+			auth_code
+		FROM
+			emp_mgt
+		WHERE
+			emp_id=#{emp_id}
+    </select>
+    
+</mapper>

@@ -1,0 +1,553 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ksinfo.employees.dao.EmployeesDao">
+	<select id="employeeList" parameterType="java.util.Map" resultType="com.ksinfo.employees.dto.EmpDto">
+		SELECT 
+			emp.emp_idx AS empIdx,
+			emp.emp_id AS empId,
+			emp.emp_name AS empName,
+			emp.hired_date AS hiredDate,
+			pst.position_code AS positionCode,
+			pst.position_name AS positionName,
+		    emp.no AS empSeq
+		FROM (
+			SELECT ROW_NUMBER() OVER (order by emp_id ASC) AS no, *
+    	FROM emp_mgt WHERE logical_del_flg = '0'
+		) AS emp
+		LEFT JOIN position_mst pst ON
+		  emp.position_code = pst.position_code
+		WHERE
+		<if test="auth == '01'">
+		 	emp.no between #{start} and #{end}
+		</if>	
+		<if test="auth != '01'">
+		    emp.emp_id = #{empId}
+		</if> 	
+		ORDER BY
+			emp.emp_id
+	</select>
+	
+	<select id="employeeCount" resultType="int">
+		SELECT
+			count(*) 
+		FROM
+			emp_mgt
+	    WHERE logical_del_flg = '0'
+	</select>
+
+	
+	<insert id="empInsert" parameterType="com.ksinfo.employees.dto.EmpDto">
+		INSERT INTO emp_mgt(
+			emp_idx
+			,emp_id
+            ,history_no
+			,password
+			,partner_comp_flg
+			,position_code
+			,field_code
+			,emp_name
+			,emp_age
+			,emp_gender
+			,department_code
+			,emp_addr
+			,phone_number
+			,hired_date
+			,stay_expiration_date
+			,dorm_in_date
+			,dorm_out_date
+			,dependent_count
+			,emp_career_flg
+			,emp_career_point
+			,health_insurance_flg
+			,pension_flg
+			,emp_insurance_flg
+			,auth_code
+			,resign_flg
+			,resign_date
+			,rec_create_id
+			,rec_create_date
+			,rec_update_id
+			,rec_update_date
+			,logical_del_flg
+			,emp_nationality
+			,stay_expiration_number
+			,emp_name_kana
+			,emp_name_eng
+			,emp_spouse_flg
+			,emp_jumin
+			,emp_comp_mail
+			,emp_mynumber
+			,emp_pension_number
+			,emp_bank_book_number
+			,emergency_phone_number
+			,emp_post
+			,emp_bank_name
+			,emp_bank_bran
+			,emp_bank_num_gubun
+			,emp_section_name
+			,emp_pay_level
+			,emp_file
+			,emp_url
+			,emp_relation
+		) VALUES (
+			nextval('emp_idx_seq'),
+			#{empId},
+			1,
+			#{password},
+			#{partnerCompFlg},
+			#{positionCode},
+			string_to_array(#{fieldCode}, ','),
+			#{empName},
+			#{empAge},
+			#{empGender},
+			#{departmentCode},
+			#{empAddr},
+			#{phoneNumber},
+			#{hiredDate},
+			#{stayExpirationDate},
+			#{dormInDate},
+			#{dormOutDate},
+			#{dependentCount},
+			#{empCareerFlg},
+			#{empCareerPoint},
+			#{healthInsuranceFlg},
+			#{pensionFlg},
+			#{empInsuranceFlg},
+			#{authCode},
+			#{resignFlg},
+			#{resignDate},
+			'admin',
+			now(),
+			'admin',
+			now(),
+			'0',
+			#{nationality},
+			#{stayExpirationNumber},
+			#{empNameKana},
+			#{empNameEng},
+			#{empSpouseFlg},
+			#{residentRegistrationNumber},
+			#{companyMail},
+			#{myNumber},
+			#{pensionNumber},
+			#{bankBookNumber},
+			#{emergencyPhoneNumber},
+			#{empPostNo},
+			#{bankName},
+			#{bankBran},
+			#{bankNumGubun},
+			#{empSectionName},
+			#{empPayLevel},
+			#{empFile},
+			#{empUrl},
+			#{empRelation}
+		);
+	</insert>
+	
+	<select id="employeesChange" parameterType="int" resultType="com.ksinfo.employees.dto.EmpDto">
+		SELECT
+			emp_idx AS empIdx,
+			history_no AS historyNo,
+			(SELECT MAX(history_no) FROM emp_mgt WHERE emp_idx = #{empIdx}) AS maxHistoryNo,
+			emp_id AS empId,
+			position_code AS positionCode,
+			emp_name AS empName,
+			emp_age AS empAge,
+			partner_comp_flg AS partnerCompFlg,
+			emp_gender AS empGender,
+			department_code AS departmentCode,
+			emp_addr AS empAddr,
+			phone_number AS phoneNumber,
+			dependent_count AS dependentCount,
+			hired_date AS hiredDate,
+			stay_expiration_date AS stayExpirationDate,
+			dorm_in_date AS dormInDate,
+			dorm_out_date AS dormOutDate,
+			health_insurance_flg AS healthInsuranceFlg,
+			pension_flg AS pensionFlg,
+			emp_insurance_flg AS empInsuranceFlg,
+			resign_flg AS resignFlg,
+			resign_date AS resignDate,
+			emp_nationality AS nationality,
+			stay_expiration_number AS stayExpirationNumber,
+			emp_name_kana AS empNameKana,
+			emp_name_eng AS empNameEng,
+			emp_spouse_flg AS empSpouseFlg,
+			emp_jumin AS residentRegistrationNumber,
+			emp_comp_mail AS companyMail,
+			emp_mynumber AS myNumber,
+			emp_pension_number AS pensionNumber,
+			emp_bank_book_number AS bankBookNumber,
+			emergency_phone_number AS emergencyPhoneNumber,
+			emp_post As empPostNo,
+			emp_bank_name AS bankName,
+			emp_bank_bran AS bankBran,
+			emp_bank_num_gubun AS bankNumGubun,
+			emp_section_name AS empSectionName,
+			emp_pay_level AS empPayLevel,
+			emp_file AS empFile,
+			emp_url AS empUrl,
+			emp_relation As empRelation
+		FROM 
+			emp_mgt
+		WHERE
+			emp_idx = #{empIdx}
+			AND logical_del_flg = '0'
+	</select>
+	
+	<select id="employeesHistory" parameterType="java.util.Map" resultType="com.ksinfo.employees.dto.EmpDto">
+		SELECT
+			emp_idx AS empIdx,
+			history_no AS historyNo,
+			(SELECT MAX(history_no) FROM emp_mgt WHERE emp_idx = #{empIdx}) AS maxHistoryNo,
+			emp_id AS empId,
+			position_code AS positionCode,
+			emp_name AS empName,
+			emp_age AS empAge,
+			emp_gender AS empGender,
+			department_code AS departmentCode,
+			emp_addr AS empAddr,
+			phone_number AS phoneNumber,
+			dependent_count AS dependentCount,
+			hired_date AS hiredDate,
+			stay_expiration_date AS stayExpirationDate,
+			dorm_in_date AS dormInDate,
+			dorm_out_date AS dormOutDate,
+			health_insurance_flg AS healthInsuranceFlg,
+			pension_flg AS pensionFlg,
+			emp_insurance_flg AS empInsuranceFlg,
+			resign_flg AS resignFlg,
+			resign_date AS resignDate,
+			emp_nationality AS nationality,
+			stay_expiration_number AS stayExpirationNumber,
+			emp_name_kana AS empNameKana,
+			emp_name_eng AS empNameEng,
+			emp_spouse_flg AS empSpouseFlg,
+			emp_jumin AS residentRegistrationNumber,
+			emp_comp_mail AS companyMail,
+			emp_mynumber AS myNumber,
+			emp_pension_number AS pensionNumber,
+			emp_bank_book_number AS bankBookNumber,
+			emergency_phone_number AS emergencyPhoneNumber,
+			emp_post As empPostNo,
+			emp_bank_name AS bankName,
+			emp_bank_bran AS bankBran,
+			emp_bank_num_gubun AS bankNumGubun,
+			emp_section_name AS empSectionName,
+			emp_pay_level AS empPayLevel,
+			emp_file AS empFile,
+			emp_url AS empUrl,
+			emp_relation As empRelation
+		FROM 
+			emp_mgt
+		WHERE
+			emp_idx = #{empIdx}
+			AND history_no = #{historyNo}
+	</select>
+	
+
+    <insert id="empPreUpdate" parameterType="com.ksinfo.employees.dto.EmpDto">
+        INSERT INTO 
+            emp_mgt 
+        SELECT
+            emp_idx
+            ,(SELECT MAX(history_no) + 1 FROM emp_mgt WHERE emp_idx = #{empIdx}) AS history_no
+            ,emp_id
+            ,password
+            ,auth_code
+            ,field_code
+            ,partner_comp_flg
+            ,hired_date
+            ,emp_name
+            ,emp_name_kana
+            ,emp_name_eng
+            ,emp_age
+            ,emp_gender
+            ,emp_post
+            ,emp_addr
+            ,phone_number
+            ,emergency_phone_number
+            ,emp_relation
+            ,position_code
+            ,emp_pay_level
+            ,department_code
+            ,emp_section_name
+            ,emp_comp_mail
+            ,emp_spouse_flg
+            ,dependent_count
+            ,emp_bank_name
+            ,emp_bank_bran
+            ,emp_bank_num_gubun
+            ,emp_bank_book_number
+            ,stay_expiration_number
+            ,stay_expiration_date
+            ,emp_mynumber
+            ,emp_pension_number
+            ,emp_nationality
+            ,emp_jumin
+            ,dorm_in_date
+            ,dorm_out_date
+            ,health_insurance_flg
+            ,pension_flg
+            ,emp_insurance_flg
+            ,emp_career_flg
+            ,emp_career_point
+            ,resign_flg
+            ,resign_date
+            ,emp_file
+            ,emp_url
+            ,rec_create_id
+            ,rec_create_date
+            ,rec_update_id
+            ,rec_update_date
+            ,logical_del_flg
+        FROM 
+            emp_mgt 
+        WHERE emp_idx = #{empIdx}
+        AND history_no = #{historyNo}
+    </insert>
+
+	<update id="empManageUpdate" parameterType="com.ksinfo.employees.dto.EmpDto">
+		UPDATE emp_mgt
+		SET 
+			emp_post =#{empPostNo},
+			emp_addr = #{empAddr},
+			phone_number = #{phoneNumber},
+			emergency_phone_number = #{emergencyPhoneNumber},
+			emp_relation = #{empRelation},
+			position_code = #{positionCode},
+            emp_pay_level = #{empPayLevel},
+			department_code = #{departmentCode},
+			emp_section_name = #{empSectionName},
+		    emp_comp_mail = #{companyMail},
+            emp_spouse_flg = #{empSpouseFlg},
+			dependent_count = #{dependentCount},
+			emp_bank_book_number = #{bankBookNumber},
+			emp_bank_name = #{bankName},
+			emp_bank_bran = #{bankBran},
+			emp_bank_num_gubun = #{bankNumGubun},
+			stay_expiration_number = #{stayExpirationNumber},			
+            stay_expiration_date = #{stayExpirationDate},
+		    emp_mynumber = #{myNumber},
+		    emp_pension_number = #{pensionNumber},
+		    emp_jumin = #{residentRegistrationNumber},
+			dorm_in_date = #{dormInDate},
+			dorm_out_date = #{dormOutDate},
+			health_insurance_flg = #{healthInsuranceFlg},
+			pension_flg = #{pensionFlg},
+			emp_insurance_flg = #{empInsuranceFlg},
+			resign_flg = #{resignFlg},
+            resign_date = #{resignDate},			
+			emp_file = #{empFile},
+			emp_url = #{empUrl},
+			rec_update_id = #{empId},
+			rec_update_date = now()
+		WHERE
+			emp_idx = #{empIdx}
+			AND history_no = (SELECT MAX(history_no) FROM emp_mgt WHERE emp_idx = #{empIdx});
+	</update>
+ 	
+	<update id="empEmployeeUpdate" parameterType="com.ksinfo.employees.dto.EmpDto">
+		UPDATE emp_mgt
+		SET 
+		    emp_post = #{empPostNo},
+		    emp_addr = #{empAddr},
+			phone_number = #{phoneNumber},
+			emergency_phone_number = #{emergencyPhoneNumber},
+			emp_comp_mail = #{companyMail},
+			emp_relation = #{empRelation},
+			stay_expiration_date = #{stayExpirationDate},
+			stay_expiration_number = #{stayExpirationNumber},
+			emp_file = #{empFile},
+			emp_url = #{empUrl},
+			rec_update_id = #{empId},
+			rec_update_date = now()
+		WHERE
+			emp_idx = #{empIdx}
+			AND history_no = (SELECT MAX(history_no) FROM emp_mgt WHERE emp_idx = #{empIdx});
+	</update>
+
+	<select id="positionDropBox" resultType="com.ksinfo.employees.dto.PositionMasterDto">
+		SELECT 
+			position_mst_idx AS positionMstIdx
+			,position_code AS positionCode
+			,position_name AS positionName
+			,rec_create_id AS recCreateId
+			,rec_create_date AS recCreateDate
+			,rec_update_id AS recUpdateId
+			,rec_update_date AS recUpdatDate
+		FROM
+			position_mst
+		ORDER BY 
+		    position_code ASC
+	</select>
+
+	<select id="departDropBox" resultType="com.ksinfo.employees.dto.DepartmentMasterDto">
+		SELECT 
+			department_mst_idx AS departmentMstIdx
+			,department_code AS departmentCode
+			,department_name AS departmentName
+			,rec_create_id AS recCreateId
+			,rec_create_date AS recCreateDate
+			,rec_update_id AS recUpdateId
+			,rec_update_date AS recUpdatDate
+		FROM
+			department_mst
+		ORDER BY 
+		    department_code ASC
+	</select>
+	
+	<select id="findLastEmpId" resultType="com.ksinfo.employees.dto.EmpIdDto">
+        SELECT A.empId, B.partnerId
+        FROM
+        (SELECT 
+            COALESCE(CAST(MAX(emp_id) AS integer) + 1, 10001) AS empId
+        FROM
+            emp_mgt
+        WHERE 
+            <![CDATA[CAST(emp_id AS integer) < 20000 AND
+            10000 < CAST(emp_id AS integer)) AS A]]>
+        ,(SELECT 
+            COALESCE(CAST(MAX(emp_id) AS integer) + 1, 50001) AS partnerId 
+        FROM
+            emp_mgt
+        WHERE 
+           <![CDATA[CAST(emp_id AS integer) < 60000 AND
+           50000 < CAST(emp_id AS integer)) AS B]]>
+	</select>
+	
+	<select id="duplicationCheck" resultType="int">
+        SELECT 
+          COUNT(*)
+        FROM
+            emp_mgt
+        WHERE 
+           emp_id = #{empId}
+	</select>	
+	
+	<select id="getPassword" parameterType="String" resultType="String">
+		SELECT
+			password
+		FROM
+			emp_mgt
+		WHERE
+			emp_id = #{empId}
+		AND logical_del_flg = '0'
+	</select>
+	
+	<update id="changePassword" parameterType="com.ksinfo.employees.dto.EmpDto">
+		UPDATE
+			emp_mgt
+		SET	
+			password = #{password}
+		WHERE
+			emp_id = #{empId}
+		AND logical_del_flg = '0'
+	</update>
+	
+	<select id="getFileList" parameterType="String" resultType="com.ksinfo.employees.dto.EmpFileDto">
+        SELECT
+          emp_file_idx AS empFileIdx
+          , emp_id AS empId
+          , photo_flg AS photoFlg
+          , file_name AS fileName
+          , file_url AS fileUrl
+          , file_update_date AS fileUpdateDate
+          , logical_del_flg AS logicalDelflg
+        FROM 
+          "public".emp_file 
+        WHERE
+          emp_id = #{empId}
+          and logical_del_flg = '0'  
+        ORDER BY
+          file_update_date DESC
+	</select>
+	
+	<insert id="registFile" parameterType="com.ksinfo.employees.dto.EmpFileDto">
+	INSERT
+	INTO "public".emp_file(
+	emp_file_idx
+	, emp_id
+	, photo_flg
+	, file_name
+	, file_url
+	, file_update_date
+	, logical_del_flg
+	)
+	VALUES (
+	NEXTVAL('emp_file_seq')
+	, #{empId}
+	, false
+	, #{fileName}
+	, #{fileUrl}
+	, now()	
+	, false
+	)
+	</insert>
+	
+	<update id="deleteFile" parameterType="int">
+  	UPDATE
+      "public".emp_file
+  	SET
+      logical_del_flg = '1'
+ 	WHERE
+      emp_file_idx = #{empFileIdx}
+	</update>
+
+	<select id="findLastEmployee" resultType="com.ksinfo.employees.dto.EmpDtoResp">
+		SELECT 
+			emp_idx,
+			emp_id,
+			partner_comp_flg,
+			position_code,
+			field_code,
+			emp_name,
+			emp_age,
+			emp_gender,
+			department_code,
+			emp_addr,
+			phone_number,
+			dependent_count,
+			hired_date,
+			stay_expiration_date,
+			dorm_in_date,
+			dorm_out_date,
+			emp_career_flg,
+			emp_career_point,
+			auth_code,emp_nationality,
+			stay_expiration_number,
+			emp_name_kana,
+			emp_name_eng,
+			emp_jumin,
+			emp_comp_mail,
+			emp_mynumber,
+			emp_pension_number,
+			emp_bank_book_number,
+			emergency_phone_number,
+			emp_post,
+			emp_bank_name,
+			emp_bank_num_gubun,
+			emp_bank_bran,
+			emp_section_name,
+			emp_pay_level,
+			emp_file,
+			emp_url
+		FROM
+			emp_mgt
+		WHERE 
+			emp_id=(SELECT MAX(emp_id) FROM emp_mgt)
+	</select>
+	
+    <update id="deleteEmp" parameterType="com.ksinfo.employees.dto.EmpDto">
+  	    UPDATE
+            "public".emp_mgt
+  	    SET
+            logical_del_flg = '1'
+ 	    WHERE
+            emp_idx = #{empIdx}
+            AND history_no = #{historyNo}
+	</update>
+
+</mapper>

@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans:beans
+	xmlns="http://www.springframework.org/schema/mvc"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:beans="http://www.springframework.org/schema/beans"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc.xsd
+      http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+      http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+
+	<!-- DispatcherServlet Context: defines this servlet's request-processing 
+		infrastructure -->
+
+	<!-- Enables the Spring MVC @Controller programming model -->
+	<annotation-driven />
+
+	<!-- Handles HTTP GET requests for /resources/** by efficiently serving 
+		up static resources in the ${webappRoot}/resources directory -->
+	<resources location="/resources/js/" mapping="/js/**" />
+	<resources location="/resources/css/" mapping="/css/**" />
+	<resources location="/resources/dist/" mapping="/dist/**" />
+	<resources location="/resources/images/" mapping="/images/**" />
+	<resources location="/resources/chart/" mapping="/chart/**" />
+<!-- Hb -->
+	<beans:bean id="uploadPath" class="java.lang.String">
+		<beans:constructor-arg value="C:\Users\81804\Desktop\新しいフォルダー (2)" />
+	</beans:bean>
+	<!-- hb -->
+	<beans:bean
+		class="org.springframework.web.servlet.view.tiles3.TilesConfigurer"
+		id="tilesConfigurer">
+		<beans:property name="definitions">
+			<beans:list>
+				<beans:value>/WEB-INF/tiles.xml</beans:value>
+			</beans:list>
+		</beans:property>
+	</beans:bean>
+	<beans:bean
+		class="org.springframework.web.servlet.view.UrlBasedViewResolver"
+		id="viewResolver">
+
+		<beans:property name="viewClass">
+			<beans:value>org.springframework.web.servlet.view.tiles3.TilesView
+			</beans:value>
+		</beans:property>
+		<beans:property name="order">
+			<beans:value>1</beans:value>
+		</beans:property>
+	</beans:bean>
+	
+	<!-- Resolves views selected for rendering by @Controllers to .jsp resources 
+		in the /WEB-INF/views directory -->
+	<beans:bean
+		class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+		<beans:property name="prefix" value="/WEB-INF/views/" />
+		<beans:property name="suffix" value=".jsp" />
+		<beans:property name="order" value="1" />
+	</beans:bean>
+
+	<context:component-scan
+		base-package="com.ksinfo.*" />
+	
+	<beans:bean class="org.springframework.web.servlet.handler.SimpleMappingExceptionResolver">
+	  <beans:property name="exceptionMappings">
+		<beans:props>
+			<beans:prop key="com.ksinfo.common.exception.MemberException">
+				main
+			</beans:prop>
+			<beans:prop key="com.ksinfo.common.exception.WrongAccessException">
+				main
+			</beans:prop>				
+			<beans:prop key="com.ksinfo.common.exception.PasswordChangeException">
+				employees/employeesChangePasswordForm
+			</beans:prop>				
+			<beans:prop key="com.ksinfo.field.exception.FieldRegistException">
+				field/fieldInfoRegistForm
+			</beans:prop>				
+			<beans:prop key="com.ksinfo.common.exception.IMSYSException">
+				common/errorExceptionPage
+			</beans:prop>
+            <beans:prop key="com.ksinfo.common.exception.AuthException">
+				main
+			</beans:prop>	
+			<beans:prop key="com.ksinfo.common.exception.ExcelReaderException">
+				Salary/salaryExcelUploadForm
+			</beans:prop>	
+
+			<beans:prop key="com.ksinfo.salary.exception.SalaryPayrollException">
+				<!-- redirect:SalaryPayrollRegist -->
+				redirect:SalaryPayrollRegist
+			</beans:prop>
+			
+		</beans:props>
+	  </beans:property>
+	</beans:bean>
+    
+    <beans:bean id="multipartResolver" class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+        <!-- Max File Size -->
+        <!-- <beans:property name="maxUploadSize" value="52428800" /> -->
+        <!-- Default Encoding -->
+        <beans:property name="defaultEncoding" value="utf-8" />
+    </beans:bean>
+
+	<!-- File download -->
+	<beans:bean id="fileDownloadView" class="com.ksinfo.common.util.FileDownloadView"/>
+	<beans:bean id="fileDownload" class="com.ksinfo.employees.util.EmpFileDownloadView"/>
+    <beans:bean id="fileViewResolver" class="org.springframework.web.servlet.view.BeanNameViewResolver">
+         <beans:property name="order" value="0"/>
+    </beans:bean>	    
+    
+<interceptors>
+		<interceptor>
+			<mapping path="/**"/>
+				<beans:bean id="loginCheckInterceptor" class="com.ksinfo.common.interceptor.LoginCheckInterceptor"/>
+		</interceptor>
+</interceptors>
+
+	
+</beans:beans>
+

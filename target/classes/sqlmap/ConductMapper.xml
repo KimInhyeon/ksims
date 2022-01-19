@@ -1,0 +1,510 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+ 
+ <mapper namespace="conduct">
+ 	 <!-- 관리자 -->
+ 	<select id="currentEmp" resultType="com.ksinfo.conduct.dto.ConductWorkDto">
+ 		SELECT
+ 			field.field_code
+ 			,emp.emp_id 
+ 			,date_trunc('month',current_date) as work_year_month
+ 		FROM
+ 			emp_mgt as emp
+ 			join field_mgt as field
+ 			on field.field_code=any(emp.field_code)
+ 		WHERE
+ 			'0000'!=any(emp.field_code)
+ 		ORDER BY emp_id,field_code asc
+	</select>
+	
+	<select id="countThisMonth" resultType="int">
+		SELECT 
+			count(*)
+		FROM
+			conduct_mgt
+		WHERE
+			work_year_month=to_date(#{date},'YYYY-MM-01')
+	</select>
+	
+	<select id="getLeaderCode" resultType="String" parameterType="com.ksinfo.conduct.dto.ConductWorkDto">
+		SELECT 
+			CASE 
+				count(*) 
+				WHEN 0 THEN '03' 
+				ELSE '02' 
+				END 
+			AS leader_code 
+		FROM emp_mgt AS e 
+			JOIN field_mgt as f 
+			ON e.emp_id=any(f.leader_emp_id) 
+		WHERE emp_id=#{emp_id} AND f.field_code=#{field_code}
+	</select>
+	<select id="currentNewEmp" resultType="com.ksinfo.conduct.dto.ConductWorkDto">
+		SELECT
+			emp.resign_flg,
+			resign_date,
+			emp.field_code
+			,emp.emp_id
+			,date_trunc('month',current_date) as work_year_month
+		FROM
+			(
+			SELECT
+				UNNEST(field_code) AS field_code,
+				emp_id,
+				resign_flg,
+				resign_date
+			FROM emp_mgt
+			<![CDATA[
+			WHERE resign_date > date_trunc('month',current_date)
+			]]>
+			OR resign_flg=FALSE
+			) AS emp
+		LEFT OUTER JOIN
+			(
+			SELECT * FROM conduct_mgt WHERE work_year_month=to_date(#{work_year_month},'YYYY-MM-01')) AS cdt
+			ON emp.emp_id=cdt.emp_id
+			AND emp.field_code = cdt.field_code
+		WHERE
+			cdt.conduct_idx IS NULL
+		AND
+			emp.field_code!='0000'		
+		ORDER BY emp.emp_id
+	</select>
+	<insert id="conductGenerate">
+		INSERT INTO conduct_mgt(
+			 conduct_idx
+			  , emp_id
+			  , position_code
+			  , leader_code
+			  , reg_emp_id
+			  , field_code
+			  , work_year_month
+			  , plan_work_days
+			  , worktime
+			  , sheet_number
+			  , rec_create_id
+			  , logical_del_flg
+			  , comp_flg
+			) 
+			VALUES ( 
+			  NEXTVAL('conduct_mgt_idx_seq')
+			  ,#{emp_id}
+			  ,(select position_code from emp_mgt where emp_id=#{emp_id})
+			  ,#{leader_code}
+			  ,#{reg_emp_id}
+			  ,#{field_code}
+			  ,#{work_year_month}
+			  ,#{plan_work_days}
+			  ,#{worktime}
+			  ,#{sheet_number}
+			  ,#{reg_emp_id}
+			  ,false
+			  ,false
+			)
+	</insert>
+
+    <select id="conductBossList"  resultType="com.ksinfo.conduct.dto.ConductBossDto" parameterType="Date">
+			select
+					emp.emp_name
+					,emp.emp_id
+					,(select field_name from field_mgt where field_code=cdt.field_code) as field_name
+					,cdt.field_code
+					,cdt.work_year_month
+					,cdt.plan_work_days
+					,cdt.paid_vacation_days
+					,cdt.work_days
+					,cdt.worktime
+					,cdt.file_name
+					,cdt.file_url
+					,cdt.sheet_number
+			from
+					(select * from conduct_mgt ) as cdt
+			right outer join
+					(select * from emp_mgt ) as emp
+			on
+					cdt.field_code=any(emp.field_code)
+			and
+					cdt.emp_id=emp.emp_id
+			where
+					cdt.work_year_month = #{date}			
+			order by emp_id asc	 
+    
+    </select>
+        <select id="conductBossPage"  resultType="com.ksinfo.conduct.dto.ConductBossDto" >
+			SELECT
+				*
+			FROM (
+					SELECT ROW_NUMBER() OVER (order by emp.emp_id ASC) AS no
+					,emp.emp_name
+					,emp.emp_id
+					,(select field_name from field_mgt where field_code=cdt.field_code) as field_name
+					,cdt.field_code
+					,cdt.work_year_month
+					,cdt.plan_work_days
+					,cdt.paid_vacation_days
+					,cdt.work_days
+					,cdt.worktime
+					,cdt.file_name
+					,cdt.file_url
+					,cdt.comp_flg
+					,cdt.sheet_number
+			from	
+					conduct_mgt as cdt
+			right outer join
+					emp_mgt as emp
+			on
+					cdt.field_code=any(emp.field_code)
+			and
+					cdt.emp_id=emp.emp_id
+			where
+					cdt.work_year_month = to_date(#{date},'YYYY-MM'||'-01')
+			order by emp_id asc
+		 	) as A
+		 	WHERE
+		 			A.no between #{pageStart} and #{pageEnd}
+			
+    
+    </select>
+    
+    <!-- 업무정보-->
+        <select id="conductTeamList" parameterType="String" resultType="com.ksinfo.conduct.dto.ConductTeamDto" >
+		select 
+				emp.emp_id,
+				emp.emp_name,
+				field.field_name,
+				field.field_code
+		from 
+				(select unnest(field_code) as code,* from emp_mgt) as emp
+		INNER JOIN 
+				field_mgt as field
+		ON 
+				emp.code=field.field_code
+		where 
+				emp.emp_id=#{emp_id}
+		order by emp.emp_id ASC
+		  
+    </select>
+    <select id="pastTeamList" parameterType="com.ksinfo.conduct.dto.ConductTeamDto" resultType="com.ksinfo.conduct.dto.ConductTeamDto" >
+    	SELECT
+    		emp.emp_id
+			,emp.emp_name
+			,field.field_name
+			,field.field_code
+			,cdt.work_year_month
+		FROM
+			conduct_mgt as cdt
+		JOIN
+			emp_mgt as emp
+		ON
+			emp.emp_id=cdt.emp_id
+		JOIN
+			field_mgt as field
+		ON
+			field.field_code=cdt.field_code
+		WHERE
+			emp.emp_id=#{emp_id}
+			AND work_year_month=to_date(#{work_year_month},'YYYY-MM-01')		
+    </select>
+    <select id="conductWorkList" parameterType="String" resultType="com.ksinfo.conduct.dto.ConductWorkDto" >
+		select
+				 emp.emp_id
+				,emp.emp_name
+				,(select field_name from field_mgt where field_code=cdt.field_code)as field_name
+				,cdt.field_code
+				,cdt.work_year_month
+				,cdt.plan_work_days
+				,cdt.paid_vacation_days
+				,cdt.work_days
+				,cdt.file_name
+				,cdt.file_url
+				,cdt.worktime
+		from
+				(select * from conduct_mgt where field_code=#{field_code}) as cdt
+		right outer join
+				(select * from emp_mgt where #{field_code}=any(field_code)) as emp
+		on
+				cdt.field_code=any(emp.field_code)
+		and
+				cdt.emp_id=emp.emp_id
+		order by emp_id ASC 
+    </select>
+    
+     <select id="conductWorkResultList" parameterType="java.util.Map" resultType="com.ksinfo.conduct.dto.ConductWorkDto" >
+		select   
+				 emp.emp_id
+				,emp.emp_name
+				,(select field_name from field_mgt where field_code=cdt.field_code)as field_name
+				,cdt.field_code
+				,cdt.work_year_month
+				,cdt.plan_work_days
+				,cdt.paid_vacation_days
+				,cdt.work_days
+				,cdt.file_name
+				,cdt.file_url
+				,cdt.worktime
+				,cdt.comp_flg
+				,cdt.sheet_number
+		from
+				(select * from conduct_mgt where field_code=#{field_code}) as cdt
+		right outer join
+				(select * from emp_mgt where #{field_code}=any(field_code)) as emp
+		on
+				cdt.field_code=any(emp.field_code)
+		and
+				cdt.emp_id=emp.emp_id
+		where
+				cdt.work_year_month=to_date(#{work_year_month},'YYYY-MM-01')		
+		<if test = "authCode == '03' ">
+		 AND	
+		 		cdt.emp_id = #{emp_id}	</if>	
+		order by emp_id ASC 
+    </select>
+	<update id="conductUpdateList" parameterType="com.ksinfo.conduct.dto.ConductUpdateDto">
+		update 
+				conduct_mgt
+		   set
+		   		plan_work_days = #{plan_work_days},
+		   		work_days =#{work_days},
+		   		paid_vacation_days =#{paid_vacation_days},
+		   		worktime =#{worktime},
+		   		rec_update_id =#{rec_update_id},
+		   		file_name=#{file_name},
+		   		file_url=#{file_url},
+		   		rec_update_date=now()
+		 where	
+				emp_id = #{emp_id} 
+		   and
+    			field_code = #{field_code}
+    	   and
+    			work_year_month =#{work_year_month}
+	</update>
+	<select id = "conductDownLoad" resultType="com.ksinfo.conduct.dto.ConductScanDto" parameterType="com.ksinfo.conduct.dto.ConductScanDto">
+		select 
+				file_name,
+				file_url 
+		  from 
+		  		conduct_mgt 
+		 where  emp_id = #{emp_id} and 
+		        field_code = #{field_code} and 
+		        work_year_month =#{work_year_month}
+				
+	</select>
+	<!-- 21/06/04 Youm -->
+	<select id="conductCompFlg" parameterType="Date" resultType="boolean">
+	SELECT
+		CASE
+			WHEN count(emp_id) = 
+				(SELECT count(comp_flg)
+				FROM conduct_mgt
+				WHERE work_year_month=#{date}
+				AND comp_flg=true)
+			THEN true
+	 		ELSE false
+	 		END as comp_flg
+	FROM
+		conduct_mgt
+	WHERE
+		work_year_month=#{date}
+	</select>
+	
+	<update id="conductCompUpdate" parameterType="java.util.Map">
+	UPDATE
+		conduct_mgt
+	SET
+		comp_flg = true,
+		rec_update_id =#{sid},
+		rec_update_date=now()
+	WHERE
+		work_year_month=to_date(#{inqueryMonth},'YYYY-MM-01')
+	</update>
+	
+	<select id="conductScheduleEmp" parameterType="java.util.Map" resultType="com.ksinfo.conduct.dto.ConductScheduleEmpDto">
+		SELECT
+			emp.emp_id,
+			emp.emp_name,
+			position.position_name,
+			field.field_name,
+			field.work_start_time,
+			field.work_end_time
+		FROM
+			(SELECT
+			UNNEST(field_code) as code,
+			emp_id,
+			emp_name,
+			position_code
+			FROM emp_mgt
+			WHeRE emp_id=#{emp_id}
+			) as emp
+		INNER JOIN
+			field_mgt as field
+		ON 
+			emp.code=field.field_code	
+		INNER JOIN
+			position_mst as position
+		ON
+			emp.position_code=position.position_code
+		WHERE field_code=#{field_code}
+	</select>
+	
+	<insert id="conductSchedulInsert" parameterType="java.util.Map">
+		INSERT INTO ks_conduct_mgt(
+		 ks_conduct_id
+		  , emp_id
+		  , conduct_year
+		  , conduct_month
+		  , conduct_day
+		  , work_code
+		  , worktime_hours
+		  , overtime_hours
+		  , worktime
+		  , tot_work_time
+		  , field_code
+		  , sheet_number
+		  , rec_create_id
+  		  , rec_update_id
+		  , logical_del_flg
+		  , work_break_time1
+		  , work_break_time2
+		) 
+		VALUES ( 
+		  NEXTVAL('ks_conduct_mgt_id_seq')
+		  ,#{emp_id}
+		  ,#{conduct_year}
+		  ,#{conduct_month}
+		  ,#{conduct_day}
+		  ,'00'
+		  ,'00:00'
+		  ,'00:00'
+		  ,'00:00'
+		  , 0
+		  ,#{field_code}
+		  ,#{sheet_number}
+		  ,#{reg_emp_id}
+		  ,#{reg_emp_id}
+		  ,false
+		  ,(SELECT TO_NUMBER(work_break_time1,'99') FROM field_mgt WHERE field_code = #{field_code})
+		  ,(SELECT TO_NUMBER(work_break_time2,'99') FROM field_mgt WHERE field_code = #{field_code})
+		)
+	</insert>
+	
+	<select id="getConductWorktime" parameterType="String" resultType="double">
+		SELECT DISTINCT
+			tot_work_time
+		FROM
+			ks_conduct_mgt
+		WHERE
+			sheet_number=#{sheet_number}
+	</select>
+	
+	<select id="conductSheetList" parameterType="date" resultType="String">
+		SELECT DISTINCT
+			cdt.sheet_number
+		FROM
+			(SELECT 
+				* 
+			FROM 
+				conduct_mgt 
+			WHERE 
+				work_year_month = to_date(#{date},'YYYY-MM-01')) as cdt
+		INNER JOIN
+			ks_conduct_mgt as ks
+		ON
+			cdt.sheet_number=ks.sheet_number	
+		WHERE
+<!-- 			cdt.work_year_month=#{date} -->
+			0 in (cdt.worktime, ks.tot_work_time)
+		OR
+			cdt.worktime!=ks.tot_work_time
+		OR  
+		<![CDATA[
+			length(cdt.file_url)<1	
+		]]>
+	</select>
+	
+	<select id="leaderSheetList" parameterType="com.ksinfo.conduct.dto.ConductWorkDto" resultType="String">
+		SELECT DISTINCT
+			cdt.sheet_number
+		FROM
+			(select * from conduct_mgt where field_code=#{field_code}) as cdt
+		INNER JOIN
+			(select * from ks_conduct_mgt where field_code=#{field_code}) as ks
+		ON
+			 cdt.sheet_number=ks.sheet_number
+		WHERE
+			cdt.work_year_month=#{work_year_month}
+		AND
+			0 IN (cdt.worktime, ks.tot_work_time)
+		OR
+			cdt.worktime!=ks.tot_work_time
+		OR  
+		<![CDATA[
+			length(cdt.file_url)<1
+		]]>	
+	</select>
+	
+	<update id="ConductScheduleUpdate" parameterType="com.ksinfo.conduct.dto.ConductScheduleUpdateDto">
+		Update 
+			ks_conduct_mgt
+		set
+ 			work_start_time = #{work_start_time},
+  			work_end_time = #{work_end_time},
+			worktime_hours = #{worktime_hours},
+			overtime_hours = #{overtime_hours},
+			worktime = #{worktime},
+			conduct_note = #{conduct_note},
+			tot_work_time = #{tot_work_time},
+			work_code = #{work_code}
+		WHERE
+		 	ks_conduct_id = #{ks_conduct_id}
+	</update>
+
+	<select id="conductSchedule" parameterType="com.ksinfo.conduct.dto.ConductScheduleDto" resultType="com.ksinfo.conduct.dto.ConductScheduleDto">
+	SELECT
+		emp_id,
+		conduct_year,
+		conduct_month,
+		conduct_day,
+		work_code,
+		cdt.work_start_time,
+		cdt.work_break_time1, 
+		cdt.work_break_time2, 
+		cdt.work_end_time,
+		worktime_hours, 
+		overtime_hours,
+		worktime,
+		conduct_note,
+		cdt.field_code,
+		ks_conduct_id,
+		h_desc,
+		TO_CHAR(fld.work_start_time,'HH24:MM:DD') as fld_st_time,
+		TO_CHAR(fld.work_end_time,'HH24:MM:DD') as fld_ed_time
+	FROM
+		KS_CONDUCT_MGT AS cdt
+	LEFT OUTER JOIN HOLIDAY
+	ON (cdt.conduct_year = h_year AND cdt.conduct_month = h_mon AND cdt.conduct_day = h_day)	
+	INNER JOIN field_mgt AS fld
+	ON (cdt.field_code = fld.field_code)	
+	WHERE
+	 	emp_id = #{emp_id} and 
+		cdt.field_code = #{field_code} and
+		conduct_year = #{conduct_year} and
+		conduct_month = #{conduct_month}
+	order by CAST(conduct_day AS INTEGER);
+	</select>	
+	
+	<select id="workDropBox" resultType="com.ksinfo.conduct.dto.WorkCodeMasterDto">
+		SELECT 
+			 work_code AS workCode
+			,work_name AS workName
+			,rec_create_id AS recCreateId
+			,rec_create_date AS recCreateDate
+			,rec_update_id AS recUpdateId
+			,rec_update_date AS recUpdatDate
+		FROM
+			work_mst
+		ORDER BY 
+		    work_code ASC
+	</select>
+	
+</mapper>

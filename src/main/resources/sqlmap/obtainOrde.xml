@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+    
+<mapper namespace = "obtainOrder">
+	
+	<insert id="obtainIns" parameterType="com.ksinfo.order.dto.ObtainOrdeDto">
+	
+	INSERT INTO obtainorder_info(
+	pject_number, 
+	estimate_number, 
+	registration_date, 
+	pers_number, 
+	pers_name, 
+	uprice_classify, 
+	uprice_amount, 
+	stast_standard_work_time, 
+	end_standard_work_time, 
+	excess_uprice, 
+	deduction_uprice, 
+	
+	rec_create_id, 
+	rec_create_date, 
+	rec_update_id, 
+	rec_update_date, 
+	logical_del_flg
+	)VALUES (
+	
+	#{pjectNum},
+	#{estimateNum},
+	#{registrationDate},
+	#{persNum},
+	#{persName},
+	#{upriceClassify},
+	#{upriceAmount},
+	#{startStandardWorkTime},
+	#{endStandardWorkTime},
+	#{excessUprice},
+	#{deductionUprice},
+	
+		'10001',
+		NOW(),
+		'10001',
+		NOW(),
+		'T');
+	
+	</insert>
+	
+	<insert id="clientIns" parameterType="com.ksinfo.order.dto.ClientInfoDto">
+	
+	INSERT INTO client_info(
+	com_code, 
+	busi_type, 
+	com_nationality, 
+	com_form, 
+	com_name, 
+	com_kana_name, 
+	com_name_eng, 
+	com_pos_code1, 
+	com_pos_code2, 
+	com_address1, 
+	
+	com_address2, 
+	"com_URL", 
+	obtorde_cont_date, 
+	obtorde_cont_num, 
+	order_cont_date, 
+	order_cont_num, 
+	acc_info_bank, 
+	acc_info_branch, 
+	acc_info_classify, 
+	acc_name, 
+	
+	rec_create_id, 
+	rec_create_date, 
+	rec_update_id, 
+	rec_update_date, 
+	logical_del_flg
+	)VALUES (
+	
+		#{comCode},
+		#{busiType},
+		#{comNationality},
+		#{comForm},
+		#{comName},
+		#{comKanaName},
+		#{comNameEng},
+		#{comPosCode1},
+		#{comPosCode2},
+		#{comAddress1},
+		
+		#{comAddress2},
+		#{comURL},
+		#{obtordeContDate},
+		#{obtordeContNum},
+		#{orderContDate},
+		#{orderContNum},
+		#{accInfoBank},
+		#{accInfoBranch},
+		#{accInfoClassify},
+		#{accName},
+		
+		'10001',
+		NOW(),
+		'10001',
+		NOW(),
+		'T');
+	
+	<!-- 		'662', -->
+	<!-- 		'02', -->
+	<!-- 		'003', -->
+	<!-- 		'02', -->
+	<!-- 		'二ノ宮', -->
+	<!-- 		'ニノミヤ', -->
+	<!-- 		'ninomiya', -->
+	<!-- 		'121', -->
+	<!-- 		'2121', -->
+	<!-- 		'2 Chome-17 Shinbashi, Minato City, Tokyo 105-0004', -->
+			
+	<!-- 		'〒105-0004 東京都港区新橋２丁目１７', -->
+	<!-- 		'http://localhost:8080/ksims/clientInfo', -->
+	<!-- 		'20201010', -->
+	<!-- 		'123123234234', -->
+	<!-- 		'20101020', -->
+	<!-- 		'345345456567', -->
+	<!-- 		'銀行', -->
+	<!-- 		'支店', -->
+	<!-- 		'3', -->
+	<!-- 		'口名', -->
+			
+	<!-- 		'10001', -->
+	<!-- 		NOW(), -->
+	<!-- 		'10001', -->
+	<!-- 		NOW(), -->
+	<!-- 		'T'); -->
+	
+	</insert>
+
+</mapper>

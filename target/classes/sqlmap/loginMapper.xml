@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+    
+<mapper namespace="login">
+    <select id="selectMemberList" parameterType="String" resultType="com.ksinfo.common.dto.LoginDto" >
+        SELECT
+             emp_id
+			,password
+			,emp_name
+			,auth_code
+			,field_code
+        FROM
+            EMP_MGT
+        WHERE
+            emp_id = #{emp_id} AND
+            logical_del_flg = '0'
+    </select>
+</mapper>

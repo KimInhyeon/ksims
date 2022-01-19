@@ -1,0 +1,981 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ksinfo.salary.dao.SalaryDao">
+	<resultMap type="com.ksinfo.salary.dto.SalaryDto" id="salaryDto">
+		<result property="identificationNo" column="emp_id"/>
+		<result property="department" column="department"/>
+		<result property="employeeName" column="emp_name"/>
+		<result property="setUpWorkingDays" column="set_up_working_days"/>
+		<result property="workingDays" column="working_days"/>
+		<result property="paidVacation" column="paid_vacation"/>
+		<result property="specialPaidVacation" column="special_paid_vacation"/>
+		<result property="absentDays" column="absent_days"/>
+		<result property="earlyLeaveDays" column="early_leave_days"/>
+		<result property="salary" column="salary"/>
+		<result property="basePay" column="base_pay"/>
+		<result property="positionPay" column="position_pay"/>
+		<result property="certificationExtraPay" column="certification_extra_pay"/>
+		<result property="familyExtraPay" column="family_extra_pay"/>
+		<result property="transportationPay" column="transportation_pay"/>
+		<result property="endYearPay" column="end_year_pay"/>
+		<result property="fixedExtraWorkingPay" column="fixed_extra_working_pay"/>
+		<result property="transportationFeeExtra" column="transportation_fee_extra"/>
+		<result property="incentive" column="incentive"/>
+		<result property="absentDeductied" column="absent_deductied"/>
+		<result property="totalSalary" column="total_salary"/>
+		<result property="taxableProperty" column="taxable_property"/>
+		<result property="caringInsurance" column="caring_insurance"/>
+		<result property="healthInsurance" column="health_insurance"/>
+		<result property="pension" column="pension"/>
+		<result property="employedInsurance" column="employed_insurance"/>
+		<result property="companyInsurance" column="company_insurance"/>
+		<result property="incomeTax" column="income_tax"/>
+		<result property="citizenTax" column="citizen_tax"/>
+		<result property="dormDeduction" column="dorm_deduction"/>
+		<result property="lifeInsurance" column="life_insurance"/>
+		<result property="accumulationMoney" column="accumulation_money"/>
+		<result property="debtFinished" column="debt_finished"/>
+		<result property="totalDeduction" column="total_deduction"/>
+		<result property="overtime" column="overtime"/>
+		<result property="extraPay" column="extra_pay"/>
+		<result property="overtimePay" column="overtime_pay"/>
+		<result property="lateness" column="lateness"/>
+		<result property="year" column="year"/>
+		<result property="month" column="month"/>
+		<result property="positionId" column="position_id"/>
+		<result property="positionName" column="position_name"/>
+		<result property="salaryNo" column="salary_no"/>
+		<result property="typeName" column="type_name"/>	
+		<result property="typeId" column="type_id"/>			
+	</resultMap>
+
+	<resultMap type="com.ksinfo.salary.dto.IncomeTaxDto" id="incomeTaxDto">
+		<result property="over" column="over"/>
+		<result property="less" column="less"/> 
+		<result property="supportFamilyZero" column="support_family_zero"/>
+		<result property="supportFamilyOne" column="support_family_one"/>
+		<result property="supportFamilyTwo" column="support_family_two"/>
+		<result property="supportFamilyThree" column="support_family_three"/>
+		<result property="supportFamilyFour" column="support_family_four"/>
+		<result property="supportFamilyFive" column="support_family_five"/>
+		<result property="supportFamilySix" column="support_family_six"/>
+		<result property="supportFamilySeven" column="support_family_seven"/>
+		<result property="extra" column="support_family_extra"/>
+		<result property="incomeTaxNo" column="income_tax_idx"/>
+		<result property="modDateTable" column="mod_date"/>
+	</resultMap>
+	
+	<resultMap type="com.ksinfo.salary.dto.InsuranceDto" id="insuranceDto">
+		<result property="over" column="over"/>
+		<result property="less" column="less"/>
+		<result property="link" column="link"/>
+		<result property="healthAll" column="health_all"/>
+		<result property="healthHalf" column="health_half"/>
+		<result property="healthCareAll" column="health_care_all"/>
+		<result property="healthCareHalf" column="health_care_half"/>
+		<result property="pensionAll" column="pension_all"/>
+		<result property="pensionHalf" column="pension_half"/>
+		<result property="insuranceNo" column="insurance_no"/>
+	</resultMap>
+	
+	<!-- 21/04/21 youm -->
+ 	<resultMap type="com.ksinfo.salary.dto.SalarymgtDto" id="SalarymgtDto">
+ 		<result property="salNo" column="sal_no"/>
+		<result property="conductIdx" column="conduct_idx"/>
+		<result property="year" column="year"/>
+		<result property="month" column="month"/>
+		<result property="paymentYear" column="payment_year"/>
+		<result property="paymentMonth" column="payment_month"/>
+		<result property="departmentName" column="department_name"/>
+		<result property="empId" column="emp_id"/>
+		<result property="empName" column="emp_name"/>
+		<result property="planWorkDays" column="plan_work_days"/>
+		<result property="workDays" column="work_days"/>
+		<result property="paidVacationDays" column="paid_vacation_days"/>
+		<result property="personalReasonVacationDays" column="personal_reason_vacation_days"/>
+		<result property="absenteeismDays" column="absenteeism_days"/>
+		<result property="tardinessCount" column="tardiness_count"/>
+		<result property="leaveEarlyCount" column="leave_early_count"/>
+		<result property="overtime" column="overtime"/>
+		<result property="salary" column="salary"/>
+		<result property="basePay" column="base_pay"/>
+		<result property="positionPay" column="position_pay"/>
+		<result property="certificationPay" column="certification_pay"/>
+		<result property="housingAllowance" column="housing_allowance"/>
+		<result property="overtimePay" column="overtime_pay"/>
+		<result property="transportationPay" column="transportation_pay"/>
+		<result property="endYearPay" column="end_year_pay"/>
+		<result property="fixedOvertimePay" column="fixed_overtime_pay"/>
+		<result property="extraCost" column="extra_cost"/>
+		<result property="incentive" column="incentive"/>
+		<result property="extraPay" column="extra_pay"/>
+		<result property="absentDeductied" column="absent_deductied"/>
+		<result property="totalSalary" column="total_salary"/>
+		<result property="taxableProperty" column="taxable_property"/>
+		<result property="caringInsurance" column="caring_insurance"/>
+		<result property="healthInsurance" column="health_insurance"/>
+		<result property="pension" column="pension"/>
+		<result property="employedInsurance" column="employed_insurance"/>
+		<result property="companyInsurance" column="company_insurance"/>
+		<result property="incomeTax" column="income_tax"/>
+		<result property="citizenTax" column="citizen_tax"/>
+		<result property="dormDeduction" column="dorm_deduction"/>
+		<result property="lifeInsurance" column="life_insurance"/>
+		<result property="accumulationMoney" column="accumulation_money"/>
+		<result property="debtFinished" column="debt_finished"/>
+		<result property="totalDeduction" column="total_deduction"/>
+		<result property="compFlg" column="comp_flg"/>
+		
+		<result property="healthInsuranceFlg" column="health_insurance_flg"/>
+		<result property="pensionFlg" column="pension_flg"/>
+		<result property="empInsuranceFlg" column="emp_insurance_flg"/>
+		<result property="overtimePaySum" column="overtime_pay_sum"/>
+		<result property="dependentCount" column="dependent_count"/>
+		
+	</resultMap>
+	
+
+<!-- excel　入力関連:　作成者　KimInhyeon -->	
+	<select id="incomeTaxChkList" resultMap="incomeTaxDto" >
+		SELECT * FROM income_tax_mst
+	</select>
+	
+	<insert id="incomeTaxInsert" parameterType="com.ksinfo.salary.dto.IncomeTaxDto">
+		INSERT INTO income_tax_mst(
+            over, 
+            less, 
+            support_family_zero, 
+            support_family_one, 
+            support_family_two, 
+            support_family_three, 
+            support_family_four, 
+            support_family_five, 
+            support_family_six, 
+            support_family_seven, 
+            support_family_extra,
+            mod_date
+            ,rec_create_id
+            ,rec_create_date
+            ,rec_update_id
+            ,rec_update_date
+            ) VALUES (
+            #{over}, 
+            #{less}, 
+            #{supportFamilyZero}, 
+            #{supportFamilyOne}, 
+            #{supportFamilyTwo}, 
+            #{supportFamilyThree}, 
+            #{supportFamilyFour}, 
+            #{supportFamilyFive}, 
+            #{supportFamilySix}, 
+            #{supportFamilySeven}, 
+            #{extra},
+            now()
+            ,''
+            ,now()
+            ,''
+            ,now()
+            )
+	</insert>
+
+	<delete id="incomeTaxDelete">
+		delete from income_tax_mst
+	</delete>
+
+	<select id="insuranceChkList" resultMap="insuranceDto">
+		SELECT * FROM insurance_pension_mst
+	</select>
+
+	<insert id="insuranceInsert" parameterType="com.ksinfo.salary.dto.InsuranceDto">
+		INSERT INTO insurance_pension_mst(
+            over, 
+            less, 
+            health_all, 
+            health_half, 
+            health_care_all, 
+            health_care_half, 
+            pension_all, 
+            pension_half,
+            mod_date
+            ,rec_create_id
+            ,rec_create_date
+            ,rec_update_id
+            ,rec_update_date
+            )VALUES (
+            #{over}, 
+            #{less}, 
+            #{healthAll},
+            #{healthHalf}, 
+            #{healthCareAll}, 
+            #{healthCareHalf}, 
+            #{pensionAll}, 
+            #{pensionHalf},
+            now()
+            ,''
+            ,now()
+            ,''
+            ,now()
+            )
+	</insert>
+
+	<delete id="insuranceDelete">
+		delete from insurance_pension_mst
+	</delete>
+
+<!-- salary_mgt table 関連 -->
+	<select id="getsalary_mgtList" resultMap="SalarymgtDto">
+		select * from salary_mgt order by position_id
+	</select>
+	
+	<select id="salary_mgtSelectOne" resultMap="SalarymgtDto" parameterType="String">
+		select * from salary_mgt where position_id = #{positionId}
+	</select>
+
+ 	<update id="salary_mgtUpdate" parameterType="com.ksinfo.salary.dto.SalarymgtDto">
+		update salary_mgt set
+		base_pay = #{basePay},   
+		position_pay = #{positionPay},  
+		position_name = #{positionName}, 
+		overtime_pay = #{overtimePay},   
+		basic_overtime = #{basicOvertime},   
+		transportation_pay = #{transportationPay},   
+		mod_date_salary_mgt = now(),
+		fixed_extra_working_pay = #{fixedExtraWorkingPay},
+		unemployment_insurance_rate = #{unemploymentInsuranceRate},
+		type_name = #{typeName},   
+		type_id = #{typeId},
+		income_tax_flag = #{incomeTaxFlag},
+		insurance_flag = #{insuranceFlag},
+		unemployment_insurance_flag = #{unemploymentInsuranceFlag}
+		where position_id = #{positionId}	
+	</update>
+	
+	<insert id="salary_mgtInsert" parameterType="com.ksinfo.salary.dto.SalarymgtDto">
+		INSERT INTO salary_mgt(
+			position_id, 
+			position_name, 
+			base_pay, 
+			position_pay, 
+			overtime_pay, 
+			basic_overtime, 
+            transportation_pay, 
+            mod_date_salary_mgt, 
+            unemployment_insurance_rate,
+            fixed_extra_working_pay,
+            type_name,
+            type_id,
+            income_tax_flag,
+            insurance_flag,
+            unemployment_insurance_flag
+            ) VALUES (
+            #{positionId}, 
+            #{positionName},
+            #{basePay},
+            #{positionPay}, 
+            #{overtimePay},
+            #{basicOvertime}, 
+            #{transportationPay}, 
+            now(), 
+            #{unemploymentInsuranceRate},
+            #{fixedExtraWorkingPay},
+            #{typeName},
+            #{typeId},
+            #{incomeTaxFlag},
+            #{insuranceFlag},
+            #{unemploymentInsuranceFlag}
+            )
+	</insert>
+	
+<!-- salary table 関連 -->
+
+	<select id="selectAll_Salary" resultMap="salaryDto" parameterType="String">	
+		
+	SELECT 
+		* 
+	FROM
+		salary_mgt AS a
+	WHERE
+		year=#{year}
+		
+	</select>
+	
+	<select id="selectAll_SalaryForPaging" resultMap="salaryDto" parameterType="java.util.Map">	
+		
+SELECT
+		 *
+		 ,ROW_NUMBER() OVER (order by emp_id ASC) AS no 
+	FROM(
+	SELECT	
+		
+		emp_id,
+			ROW_NUMBER() OVER (order by emp_id ASC) AS no,
+			emp_name,
+			SUM(salary) as salary,
+		    SUM(base_pay) as base_pay,
+		    SUM(position_pay) as position_pay,
+		    SUM(certification_pay) as certification_pay,
+		    SUM(housing_allowance) as housing_allowance,
+		    SUM(overtime_pay) as overtime_pay,
+		    SUM(transportation_pay) as transportation_pay,
+		    SUM(end_year_pay) as end_year_pay,
+		    SUM(fixed_overtime_pay) as fixed_overtime_pay,
+		    SUM(extra_cost) as extra_cost,
+		    SUM(incentive) as incentive,
+		    SUM(extra_pay) as extra_pay,
+		    SUM(total_salary) as total_salary,
+		    SUM(taxable_property) as taxable_property,
+		    SUM(health_insurance) as health_insurance,
+		    SUM(pension) as pension,
+		    SUM(employed_insurance) as employed_insurance,
+		    SUM(company_insurance) as company_insurance,
+		    SUM(income_tax) as income_tax,
+		    SUM(citizen_tax) as citizen_tax,
+		    SUM(dorm_deduction) as dorm_deduction,
+		    SUM(debt_finished) as debt_finished,
+		    SUM(total_deduction) as total_deduction
+	
+		FROM (SELECT 
+	    	*
+	    	FROM salary_mgt
+	    	WHERE
+				to_date(year||month,'YYYY-MM-01') between to_date(#{year}||#{month},'YYYY-MM-01') and to_date(#{year2}||#{month2},'YYYY-MM-01')
+		) AS a
+ 
+	GROUP BY
+		emp_id,emp_name
+		)as b
+	WHERE
+		no between #{start} and #{end}
+		
+	</select>
+	
+	<select id="selectAll_SalaryForPrint" resultMap="salaryDto" parameterType="java.util.Map">	
+		
+	SELECT	
+			emp_id,
+			emp_name,
+			SUM(salary) as salary,
+		    SUM(base_pay) as base_pay,
+		    SUM(position_pay) as position_pay,
+		    SUM(certification_pay) as certification_pay,
+		    SUM(housing_allowance) as housing_allowance,
+		    SUM(overtime_pay) as overtime_pay,
+		    SUM(transportation_pay) as transportation_pay,
+		    SUM(end_year_pay) as end_year_pay,
+		    SUM(fixed_overtime_pay) as fixed_overtime_pay,
+		    SUM(extra_cost) as extra_cost,
+		    SUM(incentive) as incentive,
+		    SUM(extra_pay) as extra_pay,
+		    SUM(total_salary) as total_salary,
+		    SUM(taxable_property) as taxable_property,
+		    SUM(health_insurance) as health_insurance,
+		    SUM(pension) as pension,
+		    SUM(employed_insurance) as employed_insurance,
+		    SUM(company_insurance) as company_insurance,
+		    SUM(income_tax) as income_tax,
+		    SUM(citizen_tax) as citizen_tax,
+		    SUM(dorm_deduction) as dorm_deduction,
+		    SUM(debt_finished) as debt_finished,
+		    SUM(total_deduction) as total_deduction
+	
+		FROM (SELECT 
+	    	*
+	    	FROM salary_mgt
+	    	WHERE
+				to_date(year||month,'YYYY-MM-01') between to_date(#{year}||#{month},'YYYY-MM-01') and to_date(#{year2}||#{month2},'YYYY-MM-01')
+		) AS a
+ 
+	GROUP BY
+		emp_id,emp_name
+	ORDER BY
+		emp_id
+		
+	</select>
+	
+	<select id="selected_SalaryCount" resultType="Integer" parameterType="java.util.Map">
+		SELECT
+			count(*)
+		FROM (
+				SELECT 
+					emp_id 
+				FROM
+					salary_mgt
+				WHERE
+					to_date(year||month,'YYYY-MM-01') between to_date(#{year}||#{month},'YYYY-MM-01') and to_date(#{year2}||#{month2},'YYYY-MM-01')
+				GROUP BY
+					emp_id
+			 )AS a
+				
+	</select>
+	
+	
+	<!-- salaryConfirm -->
+	<!-- 2021/04/13 Youm -->
+	<select id="salaryDropDownList" parameterType="java.util.Map" resultMap="SalarymgtDto">
+		SELECT DISTINCT
+				split_part(cast(work_year_month as text),'-',1) as year,
+				split_part(cast(work_year_month as text),'-',2) as month
+		FROM conduct_mgt
+		WHERE
+			cast(work_year_month as text) like #{year} || '%'
+		AND
+		<![CDATA[
+			cast(work_year_month as text) <= CONCAT(#{year},'-',#{month},'-01')
+		]]>
+		ORDER BY year DESC,month DESC
+	</select>
+	
+	<select id="salaryDropDownOne" parameterType="java.util.Map" resultMap="SalarymgtDto">
+		SELECT DISTINCT
+			split_part(cast(work_year_month as text),'-',1) as year,
+			split_part(cast(work_year_month as text),'-',2) as month
+		FROM conduct_mgt
+		WHERE
+		<![CDATA[
+			cast(work_year_month as text) = CONCAT(#{year},'-',#{month},'-01')
+		]]>
+		ORDER BY year DESC,month DESC
+	</select>
+	
+	<select id="salaryDropDownEmpList" parameterType="java.util.Map" resultMap="SalarymgtDto">
+		SELECT DISTINCT
+			YEAR,
+			MONTH
+		FROM
+			salary_mgt
+		WHERE
+			emp_id= #{emp_id}
+		AND	
+			CAST(CONCAT(year,'-',month,'-01') as DATE)
+		BETWEEN
+			(SELECT (#{targetDate}::TIMESTAMP) - ('6 month'::interval))
+		AND 
+			(SELECT (#{targetDate}::TIMESTAMP) + ('6 month'::interval))
+		AND comp_flg = true
+		ORDER BY 
+			YEAR DESC,
+			MONTH DESC
+<!-- 
+		SELECT 
+			year,
+			month
+		FROM salary_mgt
+		WHERE emp_id= #{emp_id}
+		AND comp_flg = true
+		ORDER BY year DESC,month DESC
+-->
+	</select>
+
+ 	<select id="salaryPayrollList" parameterType="java.util.Map" resultMap="SalarymgtDto">
+		SELECT * FROM salary_mgt
+		WHERE
+			emp_id=#{emp_id}
+			and year=#{year}
+			and month=#{month}
+	</select> 
+	
+	<select id="salaryPayrollPastList" parameterType="String" resultMap="SalarymgtDto">
+		SELECT * 
+		FROM salary_mgt
+		WHERE emp_id =#{emp_id}
+			AND comp_flg=true
+		ORDER BY rec_update_date DESC limit 1
+	</select>
+	
+	<select id="selected_SalaryCount_Month" resultType="Integer" parameterType="String">
+		SELECT COUNT(A.*)
+		FROM
+			(
+			SELECT *
+			FROM salary_mgt
+			WHERE year = #{year} AND month = #{month}
+			)as A
+	</select>
+	
+	<!-- 21/04/19 -->
+	 
+	<!-- Admin -->
+	<select id="salaryEmpList" resultMap="SalarymgtDto" parameterType="java.util.Map">
+		SELECT 
+			conduct.salNo
+		  , emp.emp_name
+		  ,conduct.emp_id
+		  ,salary.salary
+		  ,salary.comp_flg
+		FROM
+			(
+			SELECT
+			  ROW_NUMBER() OVER (order by emp_id) AS salNo
+			  , emp_id
+			  , work_year_month
+			FROM conduct_mgt
+			WHERE
+			<![CDATA[
+				cast(work_year_month as text) = #{work_year_month}
+			]]>
+			<!-- 
+				<![CDATA[
+				AND work_year_month >= to_date(CONCAT(#{nowYear},'-01-01'), 'YYYY-MM-DD')
+				]]>
+			 -->
+			GROUP BY emp_id, work_year_month
+			) AS conduct
+		LEFT JOIN
+			(
+			SELECT CONCAT(year,'-',month,'-01') as work_day,*
+			FROM salary_mgt
+			) as salary
+		ON (cast(conduct.work_year_month as text) = salary.work_day and conduct.emp_id=salary.emp_id)
+		INNER JOIN 
+		  emp_mgt emp
+		ON conduct.emp_id = emp.emp_id
+		WHERE
+		  <![CDATA[
+		    salNo >= CAST(#{startPage} AS INTEGER) AND 
+		    salNo <= CAST(#{endPage} AS INTEGER)
+		  ]]>
+		ORDER BY conduct.emp_id
+ 	</select>
+ 	 	 	
+ 	<select id="salaryEmpListCount" resultType="int" parameterType="String">	
+ 			SELECT 
+			COUNT(*) AS cnt
+		FROM
+			(
+			SELECT 
+			  emp_id
+			  , work_year_month
+			FROM conduct_mgt
+			WHERE
+			cast(work_year_month as text) like #{work_year_month} || '%'
+			GROUP BY emp_id, work_year_month
+			) AS conduct
+		LEFT JOIN
+			(
+			SELECT CONCAT(year,'-',month,'-01') as work_day,*
+			FROM salary_mgt
+			) as salary
+		ON (cast(conduct.work_year_month as text) = salary.work_day and conduct.emp_id=salary.emp_id)
+		INNER JOIN emp_mgt as emp
+		ON conduct.emp_id = emp.emp_id
+ 	</select>
+ 	
+	<!-- Emp -->
+ 	<select id="salaryEmpOne" resultMap="SalarymgtDto" parameterType="java.util.Map">
+		SELECT
+			emp.emp_name,
+			salary.emp_id,
+			salary.salary,
+			salary.comp_flg
+		FROM salary_mgt as salary
+		INNER JOIN emp_mgt as emp
+		ON salary.emp_id=emp.emp_id
+		WHERE salary.emp_id = #{identificationNo}
+		AND salary.comp_flg = true
+		AND salary.year=#{year}
+		AND salary.month=#{month}
+ 	</select>
+	
+	
+	<select id="salaryPayrollCdt" resultType="com.ksinfo.salary.dto.SalarymgtDto">
+		SELECT
+			dept.department_name  AS departmentName,
+			emp.emp_id AS empId,
+			emp.emp_name AS empName,
+			salary.position_pay AS positionPay,
+			salary.fixed_overtime_pay AS fixedOvertimePay,
+			salary.overtime_pay AS overtimePay,
+			salary.transportation_pay AS transportationPay,
+			emp.dependent_count AS dependentCount,
+			emp.health_insurance_flg AS healthInsuranceFlg,
+			emp.pension_flg AS pensionFlg,
+			emp.emp_insurance_flg AS empInsuranceFlg,
+			conduct.conduct_idx AS conductIdx,
+			sum(conduct.plan_work_days) OVER() AS planWorkDays,
+			sum(conduct.work_days) OVER() AS workDays,
+			sum(conduct.paid_vacation_days) OVER() AS paidVacationDays,
+			(CASE WHEN emp.emp_pay_level > 11 THEN payment.base_pay + (payment.inc_pay * ( emp.emp_pay_level - 11))  
+			                                  ELSE payment.base_pay 
+	         END ) AS basePay
+		FROM conduct_mgt as conduct
+		LEFT JOIN emp_mgt as emp
+			ON emp.emp_id = conduct.emp_id
+		LEFT JOIN department_mst as dept
+			ON dept.department_code=emp.department_code
+		LEFT JOIN	salary_mst as salary
+			ON salary.position_code = conduct.position_code
+		LEFT JOIN	payment_mst as payment
+			ON  payment.position_code = emp.position_code	
+			AND CASE WHEN emp.emp_pay_level > 11 THEN payment.pay_level = 11
+			         WHEN emp.emp_pay_level = 0  THEN payment.pay_level = 1
+			    ELSE payment.pay_level = emp.emp_pay_level
+				END	
+		WHERE 
+			conduct.emp_id = #{emp_id} 
+			AND
+			cast(work_year_month as text) like #{work_year_month} || '%'
+		GROUP BY 
+			dept.department_name,
+			emp.emp_name,
+			emp.emp_id,
+			emp.emp_pay_level,
+			basePay,
+			payment.inc_pay,
+			salary.position_pay,
+			salary.fixed_overtime_pay,
+			salary.overtime_pay,
+			salary.transportation_pay,
+			emp.dependent_count,
+			emp.health_insurance_flg,
+			emp.pension_flg,
+			emp.emp_insurance_flg,
+			conduct.conduct_idx
+		ORDER BY conduct.conduct_idx DESC limit 1
+	</select>
+	
+	<select id="salaryInsuranceSet" parameterType="Integer" resultMap="SalarymgtDto">
+		<![CDATA[
+		SELECT
+		CASE
+			WHEN over<#{pay} and less>#{pay}
+			THEN health_half
+			ELSE 0
+		END as health_insurance,
+		CASE
+			WHEN over<#{pay} and less>#{pay}
+			THEN pension_half
+			ELSE 0
+		END as pension
+		FROM insurance_pension_mst
+		WHERE
+		over<=#{pay} and less>#{pay}
+		]]>
+	<!--  
+		SELECT 
+			COALESCE(health_half,0) as health_insurance,
+			COALESCE(pension_half,0) as pension
+		FROM insurance_pension_mst
+		WHERE
+		<![CDATA[
+			over<=#{pay} and less>#{pay}
+		]]>
+	-->
+	</select>
+	
+	<select id="salaryIncomeSet" parameterType="java.util.Map" resultType="Integer">
+		SELECT 
+		<choose>
+			<when test="dependentCount == 0">
+				COALESCE(MAX(support_family_zero),0) 
+			</when>
+			<when test="dependentCount == 1">
+				COALESCE(MAX(support_family_one),0) 
+			</when>
+			<when test="dependentCount == 2">
+				COALESCE(MAX(support_family_two),0) 
+			</when>
+			<when test="dependentCount == 3">
+				COALESCE(MAX(support_family_three),0) 
+			</when>
+			<when test="dependentCount == 4">
+				COALESCE(MAX(support_family_four),0) 
+			</when>
+			<when test="dependentCount == 5">
+				COALESCE(MAX(support_family_five),0) 
+			</when>
+			<when test="dependentCount == 6">
+				COALESCE(MAX(support_family_six),0) 
+			</when>
+			<when test="dependentCount == 7">
+				COALESCE(MAX(support_family_seven),0) 
+			</when>
+			<when test="dependentCount > 7">
+				COALESCE(MAX(support_family_extra),0) 
+			</when>
+			<!-- <otherwise>
+				COALESCE(MAX(support_family_extra),0) 
+			 </otherwise>
+			 -->
+		</choose>
+		as employed_insurance
+		FROM income_tax_mst
+		WHERE
+		<![CDATA[
+			over<=#{pay} and less>#{pay}
+		]]>
+	</select>
+	
+	<select id="salaryNextEmp" parameterType="java.util.Map" resultType="String">
+		SELECT DISTINCT emp_id,work_year_month
+		FROM conduct_mgt
+		WHERE cast(work_year_month as text) like  #{year_month} || '%'
+		AND  emp_id > #{emp_id}
+		ORDER BY emp_id limit 1
+	</select>
+	
+	<select id="salaryPayrollSearch" parameterType="java.util.Map" resultMap="SalarymgtDto">
+		SELECT DISTINCT
+			year,month
+		FROM
+			salary_mgt
+		WHERE
+		<if test="pastStartDate !='' and pastEndDate != ''">
+			<![CDATA[
+				(CONCAT(year,'-',month))>=#{pastStartDate}
+			AND
+				(CONCAT(year,'-',month))<=#{pastEndDate}
+			AND
+			]]>
+		</if>
+			comp_flg=true
+		<if test="adminFlg != 01 || identificationNo !=''">
+			AND emp_id=#{identificationNo}
+		</if>
+		ORDER BY year DESC, month DESC
+	</select>
+	
+	<select id="empNameDropDown" resultType="com.ksinfo.employees.dto.EmpDto">
+		SELECT
+			emp_name as empName,
+			emp_id as empId
+		FROM
+			emp_mgt
+		ORDER BY emp_id
+	</select>
+	
+	<insert id="salaryPayrollInsert" parameterType="com.ksinfo.salary.dto.SalarymgtDto">
+	insert into 
+		salary_mgt(
+			salary_idx,
+			conduct_idx,
+			year,
+			month,
+			payment_year,
+			payment_month,
+			department_name,
+			emp_id,
+			emp_name,
+			plan_work_days,
+			work_days,
+			paid_vacation_days,
+			personal_reason_vacation_days,
+			absenteeism_days,
+			tardiness_count,
+			leave_early_count,
+			overtime,
+			salary,
+			base_pay,
+			position_pay,
+			certification_pay,
+			housing_allowance,
+			overtime_pay,
+			transportation_pay,
+			end_year_pay,
+			fixed_overtime_pay,
+			extra_cost,
+			incentive,
+			extra_pay,
+			absent_deductied,
+			total_salary,
+			taxable_property,
+			caring_insurance,
+			health_insurance,
+			pension,
+			employed_insurance,
+			company_insurance,
+			income_tax,
+			citizen_tax,
+			dorm_deduction,
+			life_insurance,
+			accumulation_money,
+			debt_finished,
+			total_deduction,
+			comp_flg,
+			rec_create_id,
+			rec_update_id,
+			logical_del_flg
+		) VALUES (
+			NEXTVAL('salary_mgt_idx_seq'),
+			#{conductIdx},
+			#{year},
+			#{month},
+			#{paymentYear},
+			#{paymentMonth},
+			#{departmentName},
+			#{empId},
+			#{empName},
+			#{planWorkDays},
+			#{workDays},
+			#{paidVacationDays},
+			#{personalReasonVacationDays},
+			#{absenteeismDays},
+			#{tardinessCount},
+			#{leaveEarlyCount},
+			#{overtime},
+			#{salary},
+			#{basePay},
+			#{positionPay},
+			#{certificationPay},
+			#{housingAllowance},
+			#{overtimePay},
+			#{transportationPay},
+			#{endYearPay},
+			#{fixedOvertimePay},
+			#{extraCost},
+			#{incentive},
+			#{extraPay},
+			#{absentDeductied},
+			#{totalSalary},
+			#{taxableProperty},
+			#{caringInsurance},
+			#{healthInsurance},
+			#{pension},
+			#{employedInsurance},
+			#{companyInsurance},
+			#{incomeTax},
+			#{citizenTax},
+			#{dormDeduction},
+			#{lifeInsurance},
+			#{accumulationMoney},
+			#{debtFinished},
+			#{totalDeduction},
+			false,
+			#{rec_id},
+			#{rec_id},
+			false)
+	</insert>
+	<update id="salaryPayrollUpdate" parameterType="com.ksinfo.salary.dto.SalarymgtDto">
+		UPDATE salary_mgt SET  
+			payment_year=#{paymentYear},
+			payment_month=#{paymentMonth},
+			plan_work_days=#{planWorkDays},
+			work_days=#{workDays},
+			paid_vacation_days=#{paidVacationDays},
+			personal_reason_vacation_days=#{personalReasonVacationDays},
+			absenteeism_days=#{absenteeismDays},
+			tardiness_count=#{tardinessCount},
+			leave_early_count=#{leaveEarlyCount},
+			overtime=#{overtime},
+			salary=#{salary},
+			base_pay=#{basePay},
+			position_pay=#{positionPay},
+			certification_pay=#{certificationPay},
+			housing_allowance=#{housingAllowance},
+			overtime_pay=#{overtimePay},
+			transportation_pay=#{transportationPay},
+			end_year_pay=#{endYearPay},
+			fixed_overtime_pay=#{fixedOvertimePay},
+			extra_cost=#{extraCost},
+			incentive=#{incentive},
+			extra_pay=#{extraPay},
+			absent_deductied=#{absentDeductied},
+			total_salary=#{totalSalary},
+			taxable_property=#{taxableProperty},
+			caring_insurance=#{caringInsurance},
+			health_insurance=#{healthInsurance},
+			pension=#{pension},
+			employed_insurance=#{employedInsurance},
+			company_insurance=#{companyInsurance},
+			income_tax=#{incomeTax},
+			citizen_tax=#{citizenTax},
+			dorm_deduction=#{dormDeduction},
+			life_insurance=#{lifeInsurance},
+			accumulation_money=#{accumulationMoney},
+			debt_finished=#{debtFinished},
+			total_deduction=#{totalDeduction},
+			rec_update_id=#{rec_id}
+		WHERE 
+			emp_id=#{empId} 
+			AND year=#{year} 
+			AND month=#{month}
+	</update>
+			
+	<!--　給料確定 START -->
+	<select id="getTargetSalary" resultType="com.ksinfo.salary.dto.SalaryConfirmDto" parameterType="java.util.Map">
+		SELECT 
+		  cdt.emp_id AS empId
+		  ,emp.emp_name AS empName
+		  ,p_mst.position_name AS positionName
+		  ,sal.salary AS salary
+		  ,sal.comp_flg AS compFlg
+		FROM 
+		  (SELECT
+		    emp_id
+			,position_code
+		  FROM 
+		    conduct_mgt
+		  WHERE 
+		    TO_CHAR(work_year_month, 'YYYY/MM') = #{yearMonth}
+		  GROUP BY
+		    emp_id, position_code
+		  ) cdt
+		LEFT JOIN
+		  emp_mgt AS emp
+		ON
+		  cdt.emp_id = emp.emp_id
+		LEFT JOIN 
+		  position_mst p_mst
+		ON  
+		  cdt.position_code = p_mst.position_code
+		LEFT JOIN
+		  (SELECT
+		    salary,
+			emp_id,
+			comp_flg
+		  FROM 
+		    salary_mgt
+		  WHERE 
+		    year = #{year} AND
+			month = #{month}
+		  ) sal
+		ON     
+		  cdt.emp_id = sal.emp_id
+		ORDER BY
+		  emp.emp_id
+	</select>	
+	
+	<select id="getTargetSalaryCount" resultType="Integer" parameterType="java.util.Map">
+			SELECT 
+			  COUNT(*) AS salCnt
+			FROM 
+			  salary_mgt
+			WHERE 
+			  year = #{year} AND 
+			  month = #{month} AND
+		      comp_flg = false
+	</select>
+	<!-- End -->
+	
+	
+	<select id="getConductCountForSalary" resultType="Integer" parameterType="String">
+		SELECT 
+		  COUNT(DISTINCT emp_id) AS cdtCnt
+		FROM
+		  conduct_mgt
+		WHERE
+		  TO_CHAR(work_year_month, 'YYYY/MM') = #{yearMonth}
+	</select>	
+	
+	<select id="getEmpCountForSalary" resultType="Integer" parameterType="String">	
+		SELECT 
+			COUNT(*) AS empCnt
+		FROM
+			emp_mgt
+		WHERE
+			emp_id LIKE '1%'
+    </select>
+    
+     <update id="confirmSalaryList" parameterType="java.util.Map">	
+		UPDATE 
+		    salary_mgt
+		SET
+		    comp_flg = true 
+		WHERE
+			year = #{year} AND
+			month = #{month}
+    </update>
+
+	
+</mapper>
