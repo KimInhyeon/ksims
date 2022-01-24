@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ksinfo.noticeboard.dao.NoticeBoardDao">
+
+	<insert id="insertNoticeBoard" parameterType="com.ksinfo.noticeboard.dto.NoticeBoardDto" useGeneratedKeys="true" keyProperty="notice_id">
+		INSERT
+		INTO NOTICE_BOARD(
+			notice_id
+			,emp_id
+			,notice_title
+			,notice_content
+			,notice_writer
+			)
+		VALUES(
+			NEXTVAL('seq_notice_board')
+			,#{emp_id}
+			,#{notice_title}
+			,#{notice_content}
+			,#{notice_writer}
+		)
+	</insert>
+	
+	<select id="noticeBoardCount" resultType="int">
+		SELECT
+			count(*)
+		FROM
+			notice_board
+		WHERE
+			logical_del_flg='0'
+	</select>
+	
+	<select id="noticeBoardList" parameterType="java.util.Map" resultType="com.ksinfo.noticeboard.dto.NoticeBoardDto">
+		SELECT 
+			nb.notice_id,
+			nb.emp_id,
+			nb.notice_title,
+			nb.notice_content,
+			nb.notice_writer,
+			nb.notice_readcount,
+			nb.notice_regdate
+		FROM 
+			(SELECT ROW_NUMBER() OVER (order by notice_id DESC) AS no, * FROM notice_board WHERE logical_del_flg='0') AS nb
+		WHERE
+			nb.no between #{start} and #{end}
+	</select>
+	
+	<select id="findNoticeBoardById" parameterType="int" resultType="com.ksinfo.noticeboard.dto.NoticeBoardDto">
+		SELECT 
+			*
+		FROM 
+			notice_board
+		WHERE 
+			notice_id=#{notice_id}
+	</select>
+	
+	<update id="modifyNoticeBoard" parameterType="java.util.Map">
+		UPDATE 
+			notice_board 
+		SET
+			notice_title = #{dto.notice_title},
+			notice_content = #{dto.notice_content},
+			notice_updatedate = now() 
+		WHERE
+			notice_id=#{notice_id}
+	</update>
+	
+	<update id="updateNoticeBoardReadCount" parameterType="int">
+		UPDATE
+			notice_board
+		SET
+			notice_readcount = notice_readcount+1 
+		WHERE
+			notice_id = #{notice_id};
+	</update>
+	
+	<update id="deleteNoticeBoard" parameterType="int">
+	  	UPDATE
+	      notice_board
+	  	SET
+	      logical_del_flg = '1'
+	 	WHERE
+	      notice_id = #{notice_id}
+	</update>
+	
+	
+	<!-- 파일 업로드 관련 -->
+	
+	<sql id="attachColumns">
+		  notice_file_idx
+		, notice_id
+		, original_name
+		, save_name
+		, size
+		, logical_del_flg
+		, file_create_date
+		, file_delete_date
+	</sql>
+
+	<insert id="insertAttach" parameterType="java.util.Map">
+		INSERT INTO notice_board_file (
+			<include refid="attachColumns" />
+		) VALUES
+		<foreach collection="list" item="item" separator=",">
+		(
+			  NEXTVAL('seq_notice_file')
+			, #{item.notice_id}
+			, #{item.original_name}
+			, #{item.save_name}
+			, #{item.size}
+			, '0'
+			, NOW()
+			, NULL
+		)
+		</foreach>
+	</insert>
+
+	<select id="selectAttachDetail" parameterType="long" resultType="com.ksinfo.noticeboard.dto.NoticeBoardFileDto">
+		SELECT
+			<include refid="attachColumns" />
+		FROM
+			notice_board_file
+		WHERE
+			logical_del_flg = '0'
+		AND
+			notice_file_idx = #{notice_file_idx}
+	</select>
+
+	<update id="deleteAttach" parameterType="int">
+		UPDATE notice_board_file
+		SET
+			  logical_del_flg = '1'
+			, file_delete_date = NOW()
+		WHERE
+			notice_id = #{notice_id}
+	</update>
+
+	<select id="selectAttachList" parameterType="int" resultType="com.ksinfo.noticeboard.dto.NoticeBoardFileDto">
+		SELECT
+			<include refid="attachColumns" />
+		FROM
+			notice_board_file
+		WHERE
+			logical_del_flg = '0'
+		AND
+			notice_id = #{notice_id}
+	</select>
+
+	<select id="selectAttachTotalCount" parameterType="int" resultType="int">
+		SELECT
+			COUNT(*)
+		FROM
+			notice_board_file
+		WHERE
+			logical_del_flg = '0'
+		AND
+			notice_id = #{notice_id}
+	</select>
+	
+	<update id="undeleteAttach" parameterType="java.util.Map">
+		UPDATE notice_board_file
+		SET
+			logical_del_flg = '0'
+		WHERE
+			notice_file_idx IN
+		<foreach collection="list" item="item" separator="," open="(" close=")">
+			#{item}
+		</foreach>
+</update>
+</mapper>

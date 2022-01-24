@@ -93,27 +93,28 @@ if (request.getProtocol().equals("HTTP/1.1"))
             	  <a href="${pageContext.request.contextPath}/main"><img src="${pageContext.request.contextPath}/css/images/logo.png" style="margin-left:-25px"/></a>
           </div>
                 <c:if test="${empty sessionScope.adminFlg}">
-                <a  class="browse item" href="javascript:location.href='${pageContext.request.contextPath}/AppraisalMainController'" style="color: #191970"><i class="address book icon"></i>社員管理</a>
-			    <a  class="browse item" href="javascript:location.href='${pageContext.request.contextPath}/conductMain'" style="color: #191970"><i class="cogs icon"></i>現場管理</a>
-			    <a  class="browse item" href="javascript:location.href='${pageContext.request.contextPath}/conductMain'" style="color: #191970"><i class="calendar alternate icon"></i>勤務管理</a>
-			    <a  class="browse item" href="javascript:location.href='${pageContext.request.contextPath}/conductMain'" style="color: #191970"><i class="money bill alternate icon"></i>給料管理</a>
-			    <a  class="browse item" href="javascript:location.href='${pageContext.request.contextPath}/AppraisalMainController'" style="color: #191970"><i class="chart pie icon"></i>評価管理</a>
+                <a  class="browse item" href="javascript:location.href='${pageContext.request.contextPath}/AppraisalMainController'" style="color: #191970;width:120px;font-size:smaller"><i class="address book icon"></i>社員管理</a>
+			    <a  class="browse item" href="javascript:location.href='${pageContext.request.contextPath}/conductMain'" style="color: #191970;width:120px;font-size:smaller"><i class="cogs icon"></i>現場管理</a>
+			    <a  class="browse item" href="javascript:location.href='${pageContext.request.contextPath}/conductMain'" style="color: #191970;width:120px;font-size:smaller"><i class="calendar alternate icon"></i>勤務管理</a>
+			    <a  class="browse item" href="javascript:location.href='${pageContext.request.contextPath}/conductMain'" style="color: #191970;width:120px;font-size:smaller"><i class="money bill alternate icon"></i>給料管理</a>
+			    <a  class="browse item" href="javascript:location.href='${pageContext.request.contextPath}/AppraisalMainController'" style="color: #191970;width:120px;font-size:smaller"><i class="chart pie icon"></i>評価管理</a>
+			    <a  class="browse item" href="javascript:location.href='${pageContext.request.contextPath}/NoticeBoardList?curPage=1'" style="color: #191970;width:120px;font-size:smaller"><i class="clipboard icon"></i>お知らせ</a>
 			    </c:if>
           		<c:if test="${sessionScope.adminFlg == '01'}">
-			    <div class="ui dropdown item" style="color: #191970" ><i class="address book icon"></i>社員管理
+			    <div class="ui dropdown item" style="color: #191970;width:120px;font-size:smaller" ><i class="address book icon"></i>社員管理
                     <div class="menu">
                       <div class="item clickMenu" style="font-size: 0.8em !important;"><a href="${pageContext.request.contextPath}/EmployeesListController?curPage=1">社員情報照会</a></div>
                       <div class="item clickMenu" style="font-size: 0.8em !important;"><a href="${pageContext.request.contextPath}/EmployeesWriteController">社員情報登録</a></div>                   
                     </div>			    
 			    </div>
-                <div class="ui dropdown item" style="color: #191970"><i class="cogs icon"></i>現場管理
+                <div class="ui dropdown item" style="color: #191970;width:120px;font-size:smaller"><i class="cogs icon"></i>現場管理
                     <div class="menu">
                       <div class="item clickMenu" style="font-size: 0.8em !important;"><a href="${pageContext.request.contextPath}/fieldList">現場照会</a></div>
                       <div class="item clickMenu" style="font-size: 0.8em !important;"><a href="${pageContext.request.contextPath}/fieldInfoRegistForm">現場登録</a></div>
                     </div>
 			    </div>
-			    <a  class="browse item" href="javascript:location.href='${pageContext.request.contextPath}/conductMain'" style="color: #191970"><i class="calendar alternate icon"></i>勤務管理</a>
-			    <div class="ui dropdown item" style="color: #191970"><i class="money bill alternate icon"></i>給料管理
+			    <a  class="browse item" href="javascript:location.href='${pageContext.request.contextPath}/conductMain'" style="color: #191970;width:120px;font-size:smaller"><i class="calendar alternate icon"></i>勤務管理</a>
+			    <div class="ui dropdown item" style="color: #191970;width:120px;font-size:smaller"><i class="money bill alternate icon"></i>給料管理
                     <div class="menu">
                       <div class="item clickMenu" style="font-size: 0.8em !important;"><a href="${pageContext.request.contextPath}/MoveTosalaryMain?curPage=1">給料明細照会・作成</a></div>
                       <div class="item clickMenu" style="font-size: 0.8em !important;"><a href="${pageContext.request.contextPath}/ExcelReader">給料マスタ情報登録</a></div>
@@ -123,8 +124,9 @@ if (request.getProtocol().equals("HTTP/1.1"))
                        <!-- <div class="item clickMenu" style="font-size: 0.8em !important;"><a href="${pageContext.request.contextPath}/mailSend">給料明細書発送</a></div>  -->
                 </div>
                 </div>
-			   　<a  class="browse item" href="javascript:location.href='${pageContext.request.contextPath}/AppraisalMainController'" style="color: #191970;margin-left:-20px;"><i class="chart pie icon"></i>評価管理</a>
-                 <a  class="browse item" href="javascript:location.href='${pageContext.request.contextPath}/OrderMain'" style="color: #191970"><i class="dollar sign icon"></i>受注管理</a>
+			   　	 <a  class="browse item" href="javascript:location.href='${pageContext.request.contextPath}/AppraisalMainController'" style="color: #191970;margin-left:-20px;;width:120px;font-size:smaller"><i class="chart pie icon"></i>評価管理</a>
+                 <a  class="browse item" href="javascript:location.href='${pageContext.request.contextPath}/OrderMain'" style="color: #191970;width:120px;font-size:smaller"><i class="dollar sign icon"></i>受注管理</a>
+                 <a  class="browse item" href="javascript:location.href='${pageContext.request.contextPath}/NoticeBoardList?curPage=1'" style="color: #191970;width:120px;font-size:smaller"><i class="clipboard icon"></i>お知らせ</a>
 			    </c:if>
 			    <c:if test="${sessionScope.adminFlg == '02' || sessionScope.adminFlg == '03'}">
 			    <div class="ui dropdown item" style="color: #191970"><i class="address book icon"></i>社員管理

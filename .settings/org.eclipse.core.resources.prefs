@@ -1,4 +1,5 @@
 eclipse.preferences.version=1
+encoding//src/main/java/com/ksinfo/noticeboard/controller/NoticeBoardController.java=UTF-8
 encoding//src/main/resources/properties/file_manage.properties=UTF-8
 encoding//src/main/resources/properties/message_ja_JP.properties=UTF-8
-encoding/<project>=UTF-8
+encoding//src/main/webapp/resources/css/style.css=UTF-8

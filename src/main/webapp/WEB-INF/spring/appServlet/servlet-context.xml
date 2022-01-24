@@ -21,8 +21,11 @@
 	<resources location="/resources/dist/" mapping="/dist/**" />
 	<resources location="/resources/images/" mapping="/images/**" />
 	<resources location="/resources/chart/" mapping="/chart/**" />
+	<resources location="/resources/summernote/" mapping="/summernote/**" />
 <!-- Hb -->
 	<beans:bean id="uploadPath" class="java.lang.String">
+	
+	<!--C:\\Users\\user\\workspace2\\NoticeBoardImage  -->
 		<beans:constructor-arg value="C:\Users\81804\Desktop\新しいフォルダー (2)" />
 	</beans:bean>
 	<!-- hb -->

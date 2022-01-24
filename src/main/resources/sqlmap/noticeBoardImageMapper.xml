@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ksinfo.noticeboard.dao.NoticeBoardImageDao">
+	
+	<select id="getLastSaveFile" resultType="com.ksinfo.noticeboard.dto.NoticeBoardImageDto">
+		SElECT 
+			* 
+		FROM 
+			notice_photo_file 
+		WHERE
+			npf_id = (SELECT MAX(npf_id) FROM notice_photo_file)
+	</select>
+	
+	<select id="findNoticeBoardImageById" resultType="com.ksinfo.noticeboard.dto.NoticeBoardImageDto">
+		SELECT 
+			*
+		FROM 
+			notice_photo_file 
+		WHERE 
+			npf_id = #{npfId}
+	</select>
+	
+	<select id="findNoticeContentList" resultType="java.lang.String">
+		SELECT
+			notice_content 
+		FROM
+			notice_board
+	</select>
+	
+	<select id="findSaveFileNameInNpfNo" parameterType="java.util.Map" resultType="java.lang.String">
+		SELECT
+			npf_save_file_name
+		FROM
+			notice_photo_file
+		WHERE
+			npf_id IN
+		<foreach collection="list" item="item" separator="," open="(" close=")">
+			#{item}
+		</foreach>	
+	</select>
+	
+	
+	<select id="findNoticeImageIdList" resultType="java.lang.String">
+		SELECT
+			npf_id
+		FROM
+			notice_photo_file
+	</select>
+	
+	<insert id="saveNoticeBoardImage" parameterType="com.ksinfo.noticeboard.dto.NoticeBoardImageDto">
+		INSERT
+		INTO "public".notice_photo_file(
+			npf_id
+			, npf_content_type
+			, npf_file_name
+			, npf_file_path
+			, npf_save_file_name
+			, npf_size
+			, npf_regdate
+			)
+		VALUES (
+			NEXTVAL('seq_notice_photo_file')
+			, #{npf_content_type}
+			, #{npf_file_name}
+			, #{npf_file_path}
+			, #{npf_save_file_name}
+			, #{npf_size}
+			, now()
+		)
+	</insert>
+
+	<insert id="insertNoticeBoard" parameterType="com.ksinfo.noticeboard.dto.NoticeBoardDto">
+		INSERT
+		INTO NOTICE_BOARD(
+			notice_id
+			,emp_id
+			,notice_title
+			,notice_content
+			,notice_writer
+			)
+		VALUES(
+			NEXTVAL('seq_notice_board')
+			,#{emp_id}
+			,#{notice_title}
+			,#{notice_content}
+			,#{notice_writer}
+		)
+	</insert>
+	
+</mapper>
