@@ -5,3 +5,157 @@ h1 {
   -webkit-box-reflect: below -10px -webkit-linear-gradient(top,rgba(0,0,0,0),rgba(0,0,0,0) 10%,rgba(0, 0, 0, 0.6));
 }
 
+table th {
+	border: 1px solid #dee2e6;
+}
+
+table td {
+	border: 1px solid #dee2e6;
+}
+
+table {
+	
+}
+
+.ncontent {
+	border: 1px solid #dee2e6;
+	min-height: 300px;
+}
+
+.inputArea {
+	margin: 50px 0;
+	text-align: center;
+}
+.disply_block{
+	display:block;
+}
+.file_list{
+	height:100%;
+}
+
+#list_Btn {
+	margin-right: 10px;
+}
+
+#delete_Btn {
+	margin-left: 10px;
+}
+.wrapped{
+	color: #222;
+    font-size: 14px;
+    font-family: "Roboto","Noto Sans KR",AppleSDGothicNeo-Regular,"Malgun Gothic","맑은 고딕",dotum,"돋움",sans-serif;
+    line-height: 1.25em;
+    word-wrap: break-word;
+    max-width: 1140px;
+    box-sizing: border-box;
+    margin: 0 auto;
+    flex-direction: row;
+    border-top: none;
+    padding: 40px 20px 0;
+}
+.article-view-head{
+	margin: 0;
+    color: #222;
+    font-size: 14px;
+    font-family: "Roboto","Noto Sans KR",AppleSDGothicNeo-Regular,"Malgun Gothic","맑은 고딕",dotum,"돋움",sans-serif;
+    line-height: 1.25em;
+    word-wrap: break-word;
+    position: relative;
+    z-index: 10;
+    padding: 0 0 29px;
+}
+
+.article-view-headH2{
+	margin: 0;
+    padding: 0;
+    color: #222;
+    font-family: "Roboto","Noto Sans KR",AppleSDGothicNeo-Regular,"Malgun Gothic","맑은 고딕",dotum,"돋움",sans-serif;
+    word-wrap: break-word;
+    margin-top: 15px;
+    font-weight: 700;
+    font-size: 24px;
+    line-height: 32px;
+}
+.pName{
+	margin: 0;
+    padding: 0;
+    color: #222;
+    font-family: "Roboto","Noto Sans KR",AppleSDGothicNeo-Regular,"Malgun Gothic","맑은 고딕",dotum,"돋움",sans-serif;
+    word-wrap: break-word;
+    margin-top: 16px;
+    line-height: 16px;
+    font-size: 14px;
+}
+.wrap-info{
+    margin: 0;
+    padding: 0;
+    color: #222;
+    font-family: "Roboto","Noto Sans KR",AppleSDGothicNeo-Regular,"Malgun Gothic","맑은 고딕",dotum,"돋움",sans-serif;
+    line-height: 1.25em;
+    word-wrap: break-word;
+    position: relative;
+    margin-top: 16px;
+    width: 100%;
+    font-size: 14px;
+}
+
+.wDate{
+	font-family: "Roboto","Noto Sans KR",AppleSDGothicNeo-Regular,"Malgun Gothic","맑은 고딕",dotum,"돋움",sans-serif;
+    line-height: 1.25em;
+    word-wrap: break-word;
+    font-size: 14px;
+    margin-right: 14px;
+    color: #94969b;
+    vertical-align: top;
+}
+
+.wrap-info a, .wrap-info span {
+    margin-right: 14px;
+    color: #94969b;
+    vertical-align: top;
+}
+
+.pv{
+	font-family: "Roboto","Noto Sans KR",AppleSDGothicNeo-Regular,"Malgun Gothic","맑은 고딕",dotum,"돋움",sans-serif;
+    line-height: 1.25em;
+    word-wrap: break-word;
+    font-size: 14px;
+    margin-right: 14px;
+    color: #94969b;
+    vertical-align: top;
+}
+
+.article-view-content{
+	margin: 0;
+    color: #222;
+    font-size: 14px;
+    font-family: "Roboto","Noto Sans KR",AppleSDGothicNeo-Regular,"Malgun Gothic","맑은 고딕",dotum,"돋움",sans-serif;
+    line-height: 1.25em;
+    border-top: 1px solid #eee;
+    word-wrap: break-word;
+    word-break: break-word;
+    padding: 0;
+}
+.content-area{
+	word-break: break-word;
+    margin: 0;
+    padding: 0;
+    color: #222;
+    font-family: "Roboto","Noto Sans KR",AppleSDGothicNeo-Regular,"Malgun Gothic","맑은 고딕",dotum,"돋움",sans-serif;
+    word-wrap: break-word;
+    margin-top: 30px;
+    line-height: 1.75em;
+    font-size: 16px;
+}
+
+.fileArea{
+	word-break: break-word;
+    margin: 0;
+    padding: 0;
+    color: #222;
+    font-family: "Roboto","Noto Sans KR",AppleSDGothicNeo-Regular,"Malgun Gothic","맑은 고딕",dotum,"돋움",sans-serif;
+    word-wrap: break-word;
+    margin-top: 30px;
+    line-height: 1.75em;
+    font-size: 16px;
+}
