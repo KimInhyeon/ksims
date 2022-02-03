@@ -1,7 +1,7 @@
 package com.ksinfo.noticeboard.dto;
 
-import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Set;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -17,8 +17,6 @@ public class NoticeBoardModifyReqDto {
 	private String notice_content;
 	private String notice_writer;
 	private int notice_readcount;
-	/** 파일 변경 여부 */
 	private String changeYn;
-	/** 파일 인덱스 리스트 */
-	private List<Long> fileIdxs;
+	private Set<Long> deleteFileIdx;
 }

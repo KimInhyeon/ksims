@@ -148,6 +148,7 @@ if (request.getProtocol().equals("HTTP/1.1"))
                     </div>
                 </div>   
 			    <a  class="browse item" href="javascript:location.href='${pageContext.request.contextPath}/AppraisalMainController'" style="color: #191970;"><i class="chart pie icon"></i>評価管理</a>
+			    <a  class="browse item" href="javascript:location.href='${pageContext.request.contextPath}/NoticeBoardList?curPage=1'" style="color: #191970;width:120px;font-size:smaller"><i class="clipboard icon"></i>お知らせ</a>
 			    </c:if>
 		
 		<!--  Message Area -->

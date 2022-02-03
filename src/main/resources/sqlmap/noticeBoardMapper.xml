@@ -127,15 +127,6 @@
 			notice_file_idx = #{notice_file_idx}
 	</select>
 
-	<update id="deleteAttach" parameterType="int">
-		UPDATE notice_board_file
-		SET
-			  logical_del_flg = '1'
-			, file_delete_date = NOW()
-		WHERE
-			notice_id = #{notice_id}
-	</update>
-
 	<select id="selectAttachList" parameterType="int" resultType="com.ksinfo.noticeboard.dto.NoticeBoardFileDto">
 		SELECT
 			<include refid="attachColumns" />
@@ -167,5 +158,18 @@
 		<foreach collection="list" item="item" separator="," open="(" close=")">
 			#{item}
 		</foreach>
-</update>
+	</update>
+	
+	<update id="deleteAttach2" parameterType="java.util.Map">
+		UPDATE notice_board_file
+		SET
+			logical_del_flg = '1'
+		  , file_delete_date = NOW()
+		WHERE
+			notice_id = #{notice_id} AND notice_file_idx IN
+			<foreach collection="list" item="item" separator="," open="(" close=")">
+				#{item}
+			</foreach>
+		
+	</update>
 </mapper>

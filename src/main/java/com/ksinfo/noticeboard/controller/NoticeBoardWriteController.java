@@ -2,7 +2,7 @@ package com.ksinfo.noticeboard.controller;
 
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.List;
+import java.util.regex.Pattern;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -14,13 +14,11 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.ModelAndView;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.ksinfo.common.util.AuthCheckUtil;
 import com.ksinfo.common.util.PageIndexArr;
 import com.ksinfo.common.util.URLCheckUtil;
 import com.ksinfo.noticeboard.dto.NoticeBoardDto;
-import com.ksinfo.noticeboard.dto.NoticeBoardFileDto;
 import com.ksinfo.noticeboard.dto.NoticeBoardReqDto;
 import com.ksinfo.noticeboard.exception.CustomException;
 import com.ksinfo.noticeboard.service.NoticeBoardService;
@@ -42,7 +40,7 @@ public class NoticeBoardWriteController {
 		URLCheckUtil.urlCheck(req);
 		ModelAndView modelAndView = new ModelAndView();
 		
-		pIA.getURLforArray(req, "遉ｾ蜩｡辣ｧ莨�","0");
+		pIA.getURLforArray(req, "驕会ｽｾ陷ｩ�ｽ｡霎｣�ｽｧ闔ｨ�ｿｽ","0");
 		modelAndView.setViewName("/board/noticeBoardWrite");	
 		
 		return modelAndView;
@@ -52,23 +50,30 @@ public class NoticeBoardWriteController {
 	@PostMapping("/NoticeBoardWriteController")
 	public ModelAndView NoticeBoardWriteImpl (NoticeBoardReqDto nDto,HttpServletRequest req , HttpServletResponse resp,MultipartFile[] files) throws ServletException, IOException, SQLException{
 		
+		boolean fileFlag = true;
+		
+		for(MultipartFile file : files) {
+			if(file.getSize()>0) {
+				fileFlag = Pattern.matches("^[a-zA-Z0-9가-힇ㄱ-ㅎㅏ-ㅣぁ-ゔァ-ヴー々〆〤一-龥_()]+[.][a-zA-Z0-9]{3,4}$", file.getOriginalFilename());
+				if(!fileFlag) {
+					throw new CustomException("ファイルのフォーマットを確認してください。 Ex)abc.txt");
+				}
+			}
+		}
+		
 		if(nDto.getContent().length()>3000) {
-			throw new CustomException("入力出来る文字数を超過しています。 (CONTENT)");
+			throw new CustomException("蜈･蜉帛�ｺ譚･繧区枚蟄玲焚繧定ｶ�驕弱＠縺ｦ縺�縺ｾ縺吶�� (CONTENT)");
 		}
 		
 		if(nDto.getTitle().length()>50) {
-			throw new CustomException("入力出来る文字数を超過しています。 (TITLE)");
+			throw new CustomException("蜈･蜉帛�ｺ譚･繧区枚蟄玲焚繧定ｶ�驕弱＠縺ｦ縺�縺ｾ縺吶�� (TITLE)");
 		}
 		
 		String authCode = (String) req.getSession().getAttribute("adminFlg");
 		String empId = (String) req.getSession().getAttribute("sid");
 		ModelAndView modelAndView = new ModelAndView();
 		NoticeBoardDto noticeBoardDto = new NoticeBoardDto();
-		if(authCode.equals("01")){
-			noticeBoardDto.setNotice_writer("管理者");
-		}else {
-			noticeBoardDto.setNotice_writer("社員");
-		}
+		noticeBoardDto.setNotice_writer("管理者");
 		noticeBoardDto.setEmp_id(empId);
 		
 		String filteredTitle = xssFilter.doFilter(nDto.getTitle());

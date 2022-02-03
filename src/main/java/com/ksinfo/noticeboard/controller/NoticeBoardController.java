@@ -5,43 +5,28 @@ import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.file.Paths;
 import java.sql.SQLException;
-import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.regex.Pattern;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.poi.util.NotImplemented;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.ModelAndView;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.ksinfo.common.util.PageIndexArr;
 import com.ksinfo.common.util.PagingModel;
 import com.ksinfo.common.util.URLCheckUtil;
-import com.ksinfo.employees.dto.EmpDto;
-import com.ksinfo.employees.service.EmployeesListService;
 import com.ksinfo.noticeboard.dto.NoticeBoardDto;
 import com.ksinfo.noticeboard.dto.NoticeBoardFileDto;
 import com.ksinfo.noticeboard.dto.NoticeBoardModifyReqDto;
@@ -66,11 +51,11 @@ public class NoticeBoardController extends HttpServlet {
 	PageIndexArr pIA = new PageIndexArr(); 
 	
 	@GetMapping("/NoticeBoardList")
-	public ModelAndView EmployeesList(Criteia cri,HttpServletRequest req , HttpServletResponse resp,String resultOk) throws ServletException, IOException, SQLException{
+	public ModelAndView noticeBoardList(Criteia cri,HttpServletRequest req , HttpServletResponse resp,String resultOk) throws ServletException, IOException, SQLException{
 		URLCheckUtil.urlCheck(req);
 		ModelAndView modelAndView = new ModelAndView();
 		List<NoticeBoardDto> noticeBoardList = null;
-		
+		String authCode = (String) req.getSession().getAttribute("adminFlg");
 		count = noticeBoardService.noticeBoardCount();
 		page = new PagingModel(count, cri.getCurPage());
 		
@@ -79,7 +64,8 @@ public class NoticeBoardController extends HttpServlet {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-
+		req.setAttribute("totCount", count);
+		req.setAttribute("authCode", authCode);
 		req.setAttribute("nlist", noticeBoardList);
 		req.setAttribute("page", page);
 		req.setAttribute("resultOk", resultOk);
@@ -161,6 +147,17 @@ public class NoticeBoardController extends HttpServlet {
 	
 	@PostMapping("/noticeBoardModify")
 	public ModelAndView NoticeBoardModifyAction(NoticeBoardModifyReqDto dto,Criteia cri,MultipartFile[] files) throws ServletException, IOException, SQLException{
+		
+		boolean fileFlag = true; 
+		
+		for(MultipartFile file : files) {
+			if(file.getSize()>0) {
+				fileFlag = Pattern.matches("^[a-zA-Z0-9가-힇ㄱ-ㅎㅏ-ㅣぁ-ゔァ-ヴー々〆〤一-龥_()]+[.][a-zA-Z0-9]{3,4}$", file.getOriginalFilename());
+				if(!fileFlag) {
+					throw new CustomException("ファイルのフォーマットを確認してください。 Ex)abc.txt");
+				}
+			}
+		}
 		
 		if(dto.getNotice_content().length()>3000) {
 			throw new CustomException("蜈･蜉帛�ｺ譚･繧区枚蟄玲焚繧定ｶ�驕弱＠縺ｦ縺�縺ｾ縺吶�� (CONTENT)");

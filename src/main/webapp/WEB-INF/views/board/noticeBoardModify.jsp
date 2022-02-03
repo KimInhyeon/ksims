@@ -10,9 +10,6 @@
 <script defer src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-fQybjgWLrvvRgtW6bFlB7jaZrFsaBXjsOMm/tB9LTS58ONXgqbR9W8oWht/amnpF" crossorigin="anonymous"></script>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/css/bootstrap.min.css" integrity="sha384-zCbKRCUGaJDkqS1kPbPd7TveP5iyJE0EjAuZQTgFLD2ylzuqKfdKlfG/eSrtxUkn" crossorigin="anonymous">
 
-<script src="summernote/summernote-bs4.js"></script>
-<link href="summernote/summernote-bs4.css" rel="stylesheet">
-
 <script>
 function backPage() {
 	if (confirm("キャンセルしますか?") == true) {
@@ -22,52 +19,6 @@ function backPage() {
 	}
 	
 }
-/*
-function noticeBoardModify(e,notice_id) {
-	e.preventDefault()
-	if($('#title').val() == ""){
-	    alert("제목을 입력하세요.");
-	    $('#title').focus();
-	    return false;
-	}else if($('#content').val() == ""){
-		alert("내용을 입력하세요.");
-		$('#content').focus();
-		return false;
-	}else{
-		if (confirm("登録しますか？") == true) {
-			
-			let data={
-				emp_id:$('#emp_id').val(),
-				notice_writer:$('#notice_writer').val(),
-				notice_readcount:$('#notice_readcount').val(),
-				notice_title:$('#notice_title').val(),
-				notice_content:$('#notice_content').val(),
-			};
-			console.log(data);
-			
-			$.ajax({
-				type:"PUT",
-				url:`/ksims/noticeBoardModify/${notice_id}`,
-				data:JSON.stringify(data),
-				contentType:"application/json; charset=utf-8",
-				dataType:"json"
-			}).done(res=>{ 
-				console.log("성공",res);
-				alert('게시글이 수정 되었습니다!');
-				location.href=`${pageContext.request.contextPath}/NoticeBoardList?curPage=1`;
-			}).fail(error=>{ 
-				alert('수정실패');
-				console.log(error);
-				
-			});
-			
-		} else {
-			return false;
-		}
-	}
-	
-}
-*/
 
 function check() {
 	if (confirm("投稿を修正しますか?") == true) {
@@ -87,7 +38,7 @@ function check() {
 	
 }
 
-/////////// 파일관련
+
 ///// 파일추가
 const fileList = '<c:out value="${empty fileList}"/>';
 
@@ -108,7 +59,7 @@ const fileHtml =
 		<div class="fileWrapped">
 			<input type="text" class="upload-name" value="ファイル探索" readonly />
 			<label for=file_`+fileIdx+` class="control-label">ファイル添付</label>
-			<input type="file" name="files" id=file_`+fileIdx+` class="upload-hidden" onchange="changeFilename(this)" />
+			<input type="file" name="files" id=file_`+fileIdx+` class="upload-hidden" onchange=changeFilename(this,`+fileIdx+`) />
 
 			<button type="button" onclick="removeFile(this)" class="btn btn-bordered btn-xs visible-xs-inline visible-sm-inline visible-md-inline visible-lg-inline">
 				<i class="minus icon" aria-hidden="true"></i>
@@ -120,17 +71,18 @@ const fileHtml =
 $('#btnDiv').before(fileHtml);
 }
 ///// 파일삭제
-function removeFile(elem) {
+function removeFile(elem,deleteFileBno) {
 document.getElementById('changeYn').value = 'Y';
-
+let noticeBoardModifyForm = $("#noticeBoardModifyForm");
+if(deleteFileBno != undefined){
+	noticeBoardModifyForm.append("<input type='hidden' id='deleteFile_'"+deleteFileBno+" name='deleteFileIdx' value='" + deleteFileBno+ "'>");
+}
 const prevTag = $(elem).prev().prop('tagName');
 if (prevTag === 'BUTTON') {
 	const file = $(elem).prevAll('input[type="file"]');
 	const filename = $(elem).prevAll('input[type="text"]');
 	file.val('');
 	filename.val('ファイル探索');
-	
-	$(elem).prevAll('input[name="fileIdxs"]').remove();
 	return false;
 }
 
@@ -139,15 +91,25 @@ target.remove();
 }
 
 //파일이름 렌더링
-function changeFilename(file) {
+function changeFilename(file,fileIdx,deleteFileBno) {
 	
 document.getElementById('changeYn').value = 'Y';
-
+let noticeBoardModifyForm = $("#noticeBoardModifyForm");
+if(deleteFileBno != undefined){
+	noticeBoardModifyForm.append("<input type='hidden' id='deleteFile_'"+deleteFileBno+" name='deleteFileIdx' value='" + deleteFileBno+ "'>");
+}
 file = $(file);
 const filename = file[0].files[0].name;
 const target = file.prevAll('input.upload-name');
 target.val(filename);
-file.prevAll('input[name="fileIdxs"]').remove();
+let checkValue = filename.match(/^[a-zA-Z0-9가-힇ㄱ-ㅎㅏ-ㅣぁ-ゔァ-ヴー々〆〤一-龥_()]+[.][a-zA-Z0-9]{3,4}$/g);
+
+if(checkValue == null){
+		alert('ファイルのフォーマットを確認してください。 Ex)abc.txt');
+		$('#file_'+fileIdx).val('');
+		target.val("ファイル探索");
+		return false;
+	}
 }
 
 </script>
@@ -252,7 +214,7 @@ file.prevAll('input[name="fileIdxs"]').remove();
 					<div class="fileWrapped">
 						<input type="text" class="upload-name" value="ファイル探索" readonly />
 						<label for="file_0" class="control-label">ファイル添付</label>
-						<input type="file" name="files" id="file_0" class="upload-hidden" onchange="changeFilename(this)" />
+						<input type="file" name="files" id="file_0" class="upload-hidden" onchange="changeFilename(this,0)" />
 					
 						<button type="button" onclick="addFile()" class="btn btn-bordered btn-xs visible-xs-inline visible-sm-inline visible-md-inline visible-lg-inline">
 							<i class="plus icon" aria-hidden="true"></i>
@@ -270,10 +232,9 @@ file.prevAll('input[name="fileIdxs"]').remove();
 							<label for="file_${status.index}" class="control-label">ファイル</label>
 						</div>
 						<div class="fileWrapped">
-							<input type="hidden" name="fileIdxs" value="${list.notice_file_idx }">
 							<input type="text" class="upload-name" value="${list.original_name }" readonly />
 							<label for="file_${status.index }" class="control-label">ファイル添付</label>
-							<input type="file" name="files" id="file_${status.index }" class="upload-hidden" onchange="changeFilename(this)" />
+							<input type="file" name="files" id="file_${status.index }" class="upload-hidden" onchange="changeFilename(this,${status.index },${list.notice_file_idx })" />
 							
 							<c:if test="${status.first}">
 								<button type="button" onclick="addFile()" class="btn btn-bordered btn-xs visible-xs-inline visible-sm-inline visible-md-inline visible-lg-inline">
@@ -281,7 +242,7 @@ file.prevAll('input[name="fileIdxs"]').remove();
 								</button>
 							</c:if>
 							
-							<button type="button" onclick="removeFile(this)" class="btn btn-bordered btn-xs visible-xs-inline visible-sm-inline visible-md-inline visible-lg-inline">
+							<button type="button" onclick="removeFile(this,${list.notice_file_idx})" class="btn btn-bordered btn-xs visible-xs-inline visible-sm-inline visible-md-inline visible-lg-inline">
 								<i class="minus icon" aria-hidden="true"></i>
 							</button>
 						</div>
@@ -293,7 +254,7 @@ file.prevAll('input[name="fileIdxs"]').remove();
 		<div id="btnDiv" class="btn_write_area">
 			<div class="ui button left floated"  onclick="backPage()"><i class="left chevron icon"></i>戻る</div>
 					
-			<div class="btn_write"><button type="submit" id="submit" name="submit" class="btn btn-primary pull-right">修整</button></div>
+			<div class="btn_write"><button type="submit" id="submit" name="submit" class="btn btn-primary pull-right">修正</button></div>
 		</div>
 			
 	</form>
@@ -339,10 +300,9 @@ file.prevAll('input[name="fileIdxs"]').remove();
 		});
 		
 		$('#notice_title').on('keyup', function() {
-			console.log('111',$(this).val());
-	        if($(this).val().length > 50) {
+	        if($(this).val().length > 45) {
 	        	alert('入力出来る文字数を超過しています。');
-	            $(this).val($(this).val().substring(0, 50));
+	            $(this).val($(this).val().substring(0, 45));
 	        }
 	    });
 		

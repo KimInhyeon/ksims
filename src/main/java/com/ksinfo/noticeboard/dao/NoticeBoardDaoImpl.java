@@ -5,6 +5,7 @@ import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.springframework.stereotype.Repository;
 
@@ -40,8 +41,8 @@ public class NoticeBoardDaoImpl extends SqlSessionFactoryService implements Noti
 	}
 	
 	@Override
-	public void deleteNoticeBoard(int notice_id) throws SQLException {
-		getSqlSessionTemplate().update("com.ksinfo.noticeboard.dao.NoticeBoardDao.deleteNoticeBoard", notice_id);
+	public int deleteNoticeBoard(int notice_id) throws SQLException {
+		return getSqlSessionTemplate().update("com.ksinfo.noticeboard.dao.NoticeBoardDao.deleteNoticeBoard", notice_id);
 	}
 	
 	@Override
@@ -90,5 +91,13 @@ public class NoticeBoardDaoImpl extends SqlSessionFactoryService implements Noti
 		HashMap<String, Object> map = new HashMap<String, Object>();
 		map.put("list",notice_file_idx);
 		return getSqlSessionTemplate().update("com.ksinfo.noticeboard.dao.NoticeBoardDao.undeleteAttach",map);
+	}
+	
+	@Override
+	public int deleteAttach2(Set<Long> notice_file_idx, int notice_id) throws SQLException {
+		HashMap<String, Object> map = new HashMap<String, Object>();
+		map.put("list",notice_file_idx);
+		map.put("notice_id", notice_id);
+		return getSqlSessionTemplate().update("com.ksinfo.noticeboard.dao.NoticeBoardDao.deleteAttach2",map);
 	}
 }

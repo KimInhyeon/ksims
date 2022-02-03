@@ -13,7 +13,6 @@
 </head>
 <body>
 	<div class="container">
-		<!--<button class="btn btn-primary" onclick="imageClean()">이미지 청소</button>-->
 		<div class="row marketing">
 			<div class="col-lg-12">
 				<table class="table" style="margin-top: 30px;">
@@ -22,7 +21,7 @@
 							<th>NO</th>
 							<th>タイトル</th>
 							<th>作成者</th>
-							<th>照会数</th>
+							<th class="thReadCount">照会数</th>
 							<th>日付</th>
 						</tr>
 					</thead>
@@ -34,11 +33,12 @@
 								</tr>
 							</c:when>
 							<c:otherwise>
+							<c:set var="num" value="${totCount-((page.curPage-1)*10) }"/>
 								<c:forEach items="${nlist}" var="nlist">
-								<c:set var="dateValue" value="${nlist.notice_regdate }" />
-								<c:set var="noticeTitle" value="${nlist.notice_title }" />
+									<c:set var="dateValue" value="${nlist.notice_regdate }" />
+									<c:set var="noticeTitle" value="${nlist.notice_title }" />
 									<tr>
-										<td class="col-md-1">${nlist.notice_id}</td>
+										<td class="col-md-1">${num}</td>
 										<c:choose>
 											<c:when test="${nlist.notice_title.length()>30}">
 												<td class="col-md-6"><a class="noticeDetail" href='<c:out value="${nlist.notice_id}"/>'>${fn:substring(noticeTitle,0,30)}...</a></td>
@@ -51,6 +51,7 @@
 										<td class="col-md-1 readCount">${nlist.notice_readcount}</td>
 										<td class="col-md-2">${fn:substring(dateValue,0,10)}</td>
 									</tr>
+									<c:set var="num" value="${num-1 }"/>
 								</c:forEach>
 							</c:otherwise>
 						</c:choose>
@@ -62,10 +63,12 @@
 				</form>
 			</div>
 		</div>
-		<div class="btn-area" style="text-align: end; margin-top: 20px">
-			<button class="btn btn-primary"
-				onclick="location.href='/ksims/NoticeBoardWriteController'">書き込み</button>
-		</div>
+		<c:if test="${authCode==01}">
+			<div class="btn-area" style="text-align: end; margin-top: 20px">
+				<button class="btn btn-primary"
+					onclick="location.href='/ksims/NoticeBoardWriteController'">書き込み</button>
+			</div>
+		</c:if>
 		<div align="center">
 			<div class="ui pagination menu">
 				<c:if test="${page.curBlock > 1}">
@@ -133,21 +136,6 @@
 			moveForm.submit();
 		});
 	});
-	
-	
-	function imageClean(){
-		$.ajax({
-			url:`/ksims/noticeImageClean2`,
-			dataType:"json"
-		}).done(res=>{
-			console.log(res);
-			if(res.result=="ok"){
-				alert('이미지 청소 성공');
-			}
-		}).fail(error=>{
-			console.log("실패",error);
-		});
-	}
 	
 </script>
 </body>
