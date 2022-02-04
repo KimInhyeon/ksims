@@ -160,6 +160,15 @@
 		</foreach>
 	</update>
 	
+	<update id="deleteAttach" parameterType="int">
+		UPDATE notice_board_file
+		SET
+			  logical_del_flg = '1'
+			, file_delete_date = NOW()
+		WHERE
+			notice_id = #{notice_id}
+	</update>
+	
 	<update id="deleteAttach2" parameterType="java.util.Map">
 		UPDATE notice_board_file
 		SET
