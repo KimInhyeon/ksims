@@ -20,8 +20,9 @@
 <script type="text/javascript" src="/ksims/js/dropzone.min.js"></script>
 <script type="text/javascript" src="/ksims/js/loadEmployeeInfo.js"></script>
 <script type="text/javascript"  src="/ksims/dist/semantic.min.js"></script>
+<script src="summernote/summernote-bs4.js"></script>
 
-
+<link href="summernote/summernote-bs4.css" rel="stylesheet">
 <link rel="stylesheet" type="text/css"  href="/ksims/css/bootstrap.min.css" />
 <link rel="stylesheet" type="text/css"  href="/ksims/css/jquery.timepicker.min.css" />
 <link rel="stylesheet" type="text/css"  href="/ksims/css/c3.css" />

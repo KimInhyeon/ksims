@@ -2,6 +2,7 @@ package com.ksinfo.noticeboard.dao;
 
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.ibatis.annotations.Param;
 
@@ -16,7 +17,7 @@ public interface NoticeBoardDao {
 	public List<NoticeBoardDto> noticeBoardList(int start,int end) throws SQLException;
 	public NoticeBoardDto findNoticeBoardById(@Param("notice_id") int notice_id) throws SQLException;
 	public void updateNoticeBoardReadCount(@Param("notice_id") int notice_id) throws SQLException;
-	public void deleteNoticeBoard(@Param("notice_id") int notice_id) throws SQLException;
+	public int deleteNoticeBoard(@Param("notice_id") int notice_id) throws SQLException;
 	public void modifyNoticeBoard(int notice_id,NoticeBoardModifyReqDto dto) throws SQLException;
 	public int noticeBoardCount() throws SQLException;
 	
@@ -26,4 +27,5 @@ public interface NoticeBoardDao {
 	public List<NoticeBoardFileDto> selectAttachList(@Param("notice_id") int notice_id) throws SQLException;
 	public int selectAttachTotalCount(@Param("notice_id") int notice_id) throws SQLException;
 	public int undeleteAttach(List<Long> notice_file_idx) throws SQLException;
+	public int deleteAttach2(Set<Long> notice_file_idx,@Param("notice_id") int notice_id) throws SQLException;
 }

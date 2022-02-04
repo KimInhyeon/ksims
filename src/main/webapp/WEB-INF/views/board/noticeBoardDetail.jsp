@@ -53,7 +53,7 @@
 			<button type="button" onclick="backPage()" id="list_Btn"
 				class="btn btn-primary">戻る</button>
 			<c:if test="${authCode==01}">
-				<button type="button" id="modify_Btn" class="btn btn-warning">修整</button>
+				<button type="button" id="modify_Btn" class="btn btn-warning">修正</button>
 				<button type="button" id="delete_Btn" class="btn btn-danger">削除</button>
 			</c:if>
 		</div>

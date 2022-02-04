@@ -9,9 +9,6 @@
 <script defer src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-fQybjgWLrvvRgtW6bFlB7jaZrFsaBXjsOMm/tB9LTS58ONXgqbR9W8oWht/amnpF" crossorigin="anonymous"></script>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/css/bootstrap.min.css" integrity="sha384-zCbKRCUGaJDkqS1kPbPd7TveP5iyJE0EjAuZQTgFLD2ylzuqKfdKlfG/eSrtxUkn" crossorigin="anonymous">
 
-<script src="summernote/summernote-bs4.js"></script>
-<link href="summernote/summernote-bs4.css" rel="stylesheet">
-
 <script>
 function backPage() {
 	location.href='${pageContext.request.contextPath}/NoticeBoardList';
@@ -59,7 +56,7 @@ function addFile() {
 			<div class="fileWrapped">
 				<input type="text" class="upload-name" value="ファイル探索" readonly />
 				<label for=file_`+fileIdx+` class="control-label">ファイル添付</label>
-				<input type="file" name="files" id=file_`+fileIdx+` class="upload-hidden" onchange="changeFilename(this)" />
+				<input type="file" name="files" id=file_`+fileIdx+` class="upload-hidden" onchange=changeFilename(this,`+fileIdx+`) />
 
 				<button type="button" onclick="removeFile(this)" class="btn btn-bordered btn-xs visible-xs-inline visible-sm-inline visible-md-inline visible-lg-inline">
 					<i class="minus icon" aria-hidden="true"></i>
@@ -85,11 +82,21 @@ function removeFile(elem) {
 	target.remove();
 }
 // 파일이름 렌더링
-function changeFilename(file) {
+function changeFilename(file,fileIdx) {
 	file = $(file);
 	const filename = file[0].files[0].name;
 	const target = file.prevAll('input');
+	let checkValue = filename.match(/^[a-zA-Z0-9가-힇ㄱ-ㅎㅏ-ㅣぁ-ゔァ-ヴー々〆〤一-龥_()]+[.][a-zA-Z0-9]{3,4}$/g);
+	
+	if(checkValue == null){
+		alert('ファイルのフォーマットを確認してください。 Ex)abc.txt');
+		$('#file_'+fileIdx).val('');
+		target.val("ファイル探索");
+		return false;
+	}
+	
 	target.val(filename);
+	
 }
 </script>
 <style>
@@ -185,7 +192,7 @@ function changeFilename(file) {
 			<div class="fileWrapped">
 				<input type="text" class="upload-name" value="ファイル探索" readonly />
 				<label for="file_0" class="control-label">ファイル添付</label>
-				<input type="file" name="files" id="file_0" class="upload-hidden" onchange="changeFilename(this)" />
+				<input type="file" name="files" id="file_0" class="upload-hidden" onchange="changeFilename(this,0)" />
 			
 				<button type="button" onclick="addFile()" class="btn btn-bordered btn-xs visible-xs-inline visible-sm-inline visible-md-inline visible-lg-inline">
 					<i class="plus icon" aria-hidden="true"></i>
@@ -240,9 +247,9 @@ function changeFilename(file) {
 		
 		
 		$('#title').on('keyup', function() {
-	        if($(this).val().length > 50) {
+	        if($(this).val().length > 45) {
 	        	alert('入力出来る文字数を超過しています。');
-	            $(this).val($(this).val().substring(0, 50));
+	            $(this).val($(this).val().substring(0, 45));
 	        }
 	    });
 		

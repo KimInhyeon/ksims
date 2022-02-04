@@ -6,7 +6,6 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -65,7 +64,12 @@ public class NoticeBoardServiceImpl implements NoticeBoardService {
 	
 	@Override
 	public void deleteNoticeBoard(int notice_id) throws SQLException {
-		noticeBoardDao.deleteNoticeBoard(notice_id);
+		int result = noticeBoardDao.deleteNoticeBoard(notice_id);
+		
+		if(result==1) {
+			noticeBoardDao.deleteAttach(notice_id);
+		}
+	 	
 	}
 	
 	@Override
@@ -78,12 +82,9 @@ public class NoticeBoardServiceImpl implements NoticeBoardService {
 		noticeBoardDao.modifyNoticeBoard(notice_id, dto);
 		
 		if ("Y".equals(dto.getChangeYn())) {
-			noticeBoardDao.deleteAttach(notice_id);
-
-			// fileIdxs에 포함된 idx를 가지는 파일의 삭제여부를 '0'으로 업데이트
-			if (CollectionUtils.isEmpty(dto.getFileIdxs()) == false) {
-				noticeBoardDao.undeleteAttach(dto.getFileIdxs());
-			}
+			if(!CollectionUtils.isEmpty(dto.getDeleteFileIdx())){
+				noticeBoardDao.deleteAttach2(dto.getDeleteFileIdx(),notice_id);
+			};
 		}
 		
 		List<NoticeBoardFileDto> fileList = fileUtils.uploadFiles(files, notice_id);
